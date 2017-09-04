@@ -81,8 +81,8 @@ FALSE           f(?i:alse)
 WHITE_SPACE     (\n | \r | \t | \v | \f)+
 SINGLE_LINE_COMMENT_START   --
 NEWLINE         \n
-MULTI_LINE_COMMENT_START    a
-MULTI_LINE_COMMENT_END      b
+MULTI_LINE_COMMENT_START    \(\*
+MULTI_LINE_COMMENT_END      \*\)
 STR_TOK      ".+"
 INT_TOK         "[0-9]+"
 IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
@@ -101,18 +101,20 @@ IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
   
   
 
-<INSIDE_SINGLE_LINE_COMMENT>{NEWLINE}     BEGIN(INITIAL);
+<INSIDE_SINGLE_LINE_COMMENT>{NEWLINE}   {
+                                            printf("end of single line comment");
+                                            BEGIN(INITIAL);
+                                        }
+<INSIDE_SINGLE_LINE_COMMENT>(.|\n)  {}
 
+<INSIDE_MULTI_LINE_COMMENT>{MULTI_LINE_COMMENT_END}     BEGIN(INITIAL);
 
-
-<INSIDE_MULTI_LINE_COMMENT>{NEWLINE}     BEGIN(INITIAL);
-
-
+<INSIDE_MULTI_LINE_COMMENT>(.|\n)  {}
 
 
 
 {SINGLE_LINE_COMMENT_START} {   BEGIN(INSIDE_SINGLE_LINE_COMMENT); }
-{MULTI_LINE_COMMENT_START}  {   BEGIN(INSIDE_MULTI_LINE_COMMENT); }
+{MULTI_LINE_COMMENT_START}  {   printf("inside multiline comment!");BEGIN(INSIDE_MULTI_LINE_COMMENT); }
 
 {STR_TOK}         { 
                     cool_yylval.symbol = inttable.add_string(yytext);
