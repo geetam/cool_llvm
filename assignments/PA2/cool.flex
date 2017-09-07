@@ -78,7 +78,7 @@ OF              (?i:of)
 NOT             (?i:not)
 TRUE            t(?i:rue)
 FALSE           f(?i:alse)
-WHITE_SPACE     (\n | \r | \t | \v | \f)+
+WHITE_SPACE     [ \n\r\t\v\f]+
 SINGLE_LINE_COMMENT_START   --
 NEWLINE         \n
 MULTI_LINE_COMMENT_START    \(\*
@@ -87,7 +87,7 @@ STR_TOK      ".+"
 INT_TOK         "[0-9]+"
 IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
 
-
+LETTER          [a-zA-Z]
 %%
 
  /*
@@ -102,7 +102,6 @@ IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
   
 
 <INSIDE_SINGLE_LINE_COMMENT>{NEWLINE}   {
-                                            printf("end of single line comment");
                                             BEGIN(INITIAL);
                                         }
 <INSIDE_SINGLE_LINE_COMMENT>(.|\n)  {}
@@ -114,7 +113,14 @@ IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
 
 
 {SINGLE_LINE_COMMENT_START} {   BEGIN(INSIDE_SINGLE_LINE_COMMENT); }
-{MULTI_LINE_COMMENT_START}  {   printf("inside multiline comment!");BEGIN(INSIDE_MULTI_LINE_COMMENT); }
+{MULTI_LINE_COMMENT_START}  {   BEGIN(INSIDE_MULTI_LINE_COMMENT); }/*
+(?<={CLASS}{WHITE_SPACE}){IDENTIFIER}(?={INHERITS}{IDENTIFIER})
+*/
+.(?=a)    {
+                                    printf(yytext);
+                                    cool_yylval.symbol = stringtable.add_string(yytext);
+                                    return (TYPEID);
+                                    }
 
 {STR_TOK}         { 
                     cool_yylval.symbol = inttable.add_string(yytext);
@@ -147,6 +153,23 @@ IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
 TRUE            t(?i:rue)  
 FALSE           f(?i:alse)
 WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
+\+                { return  '+'; }
+"/"               { return  '/'; }
+"-"               { return  '-'; } 
+"*"               { return  '*'; } 
+"="               { return  '='; } 
+"<"               { return  '<'; } 
+"."               { return  '.'; }
+"~"               { return  '~'; }
+","               { return  ','; } 
+";"               { return  ';'; } 
+":"               { return  ':'; }
+"("               { return  '('; } 
+")"               { return  ')'; } 
+"@"               { return  '@'; }
+"{"               { return  '{'; } 
+"}"               { return  '}'; } 
+
 
  /*
   * Keywords are case-insensitive except for the values true and false,

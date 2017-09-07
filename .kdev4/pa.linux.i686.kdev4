@@ -13,3 +13,6 @@ Name=GCC
 [CustomDefinesAndIncludes][ProjectPath0][Includes]
 1=/home/geetam/Documents/Compilers/pa.linux.i686/include/
 2=/home/geetam/Documents/Compilers/pa.linux.i686/include/PA2/
+
+[Project]
+VersionControlSupport=kdevgit
