@@ -14,7 +14,12 @@
  
 %option noyywrap
 %x INSIDE_MULTI_LINE_COMMENT 
-%x INSIDE_SINGLE_LINE_COMMENT 
+%x INSIDE_SINGLE_LINE_COMMENT
+%x CLASS_DEF
+%x CLASS_NAME_EXTRCTD
+%x CLASS_INHERITS
+%x IDEN_ENC
+%x ISDECL
 %{
 
 #include <cool-parse.h>
@@ -84,7 +89,7 @@ NEWLINE         \n
 MULTI_LINE_COMMENT_START    \(\*
 MULTI_LINE_COMMENT_END      \*\)
 STR_TOK      ".+"
-INT_TOK         "[0-9]+"
+INT_TOK         [0-9]+
 IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
 
 LETTER          [a-zA-Z]
@@ -112,15 +117,61 @@ LETTER          [a-zA-Z]
 
 
 
+{CLASS}           {
+                    BEGIN(CLASS_DEF);
+                    return (CLASS);
+                  }
+
+
+<CLASS_DEF>{WHITE_SPACE} {}
+<CLASS_DEF>{IDENTIFIER} {
+                            cool_yylval.symbol = stringtable.add_string(yytext);
+                            BEGIN(CLASS_NAME_EXTRCTD);
+                            return TYPEID;
+                        }
+<CLASS_NAME_EXTRCTD>{WHITE_SPACE} {}
+<CLASS_NAME_EXTRCTD>"{" {
+                            BEGIN(INITIAL);
+                            return '{';
+                        }
+<CLASS_NAME_EXTRCTD>{INHERITS} {
+                                BEGIN(CLASS_INHERITS);
+                                return INHERITS;
+                            }
+<CLASS_INHERITS>{WHITE_SPACE} {}
+<CLASS_INHERITS>{IDENTIFIER} {
+                                cool_yylval.symbol = stringtable.add_string(yytext);
+                                BEGIN(INITIAL);
+                                return TYPEID;
+                             }
+
 {SINGLE_LINE_COMMENT_START} {   BEGIN(INSIDE_SINGLE_LINE_COMMENT); }
 {MULTI_LINE_COMMENT_START}  {   BEGIN(INSIDE_MULTI_LINE_COMMENT); }/*
-(?<={CLASS}{WHITE_SPACE}){IDENTIFIER}(?={INHERITS}{IDENTIFIER})
-*/
-.(?=a)    {
-                                    printf(yytext);
-                                    cool_yylval.symbol = stringtable.add_string(yytext);
-                                    return (TYPEID);
-                                    }
+
+
+
+
+(?<={CLASS}{WHITE_SPACE}){IDENTIFIER}(?={INHERITS}{IDENTIFIER})*/
+
+{IDENTIFIER}    {
+                    cool_yylval.symbol = stringtable.add_string(yytext);
+                    BEGIN(IDEN_ENC);
+                    return OBJECTID;
+                }
+<IDEN_ENC>[^ :] {
+                    BEGIN(INITIAL);
+                }
+<IDEN_ENC>":"   {
+                    BEGIN(ISDECL);
+                    return ':';
+                }
+<IDEN_ENC>" +" {}
+<ISDECL>{WHITE_SPACE} {}
+<ISDECL>{IDENTIFIER}    {
+                            cool_yylval.symbol = stringtable.add_string(yytext);
+                            BEGIN(INITIAL);
+                            return TYPEID;
+                        }
 
 {STR_TOK}         { 
                     cool_yylval.symbol = inttable.add_string(yytext);
@@ -132,8 +183,8 @@ LETTER          [a-zA-Z]
                     return {INT_CONST};
                   }
                     
-{DARROW}		  { return (DARROW); }
-{CLASS}           { return (CLASS); }
+{DARROW}		  { return (DARROW); }/*
+{CLASS}           { return (CLASS); }*/
 {ELSE}            { return (ELSE); }
 {FI}              { return (FI); }
 {IF}              { return (IF); }
@@ -187,12 +238,3 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
 
 %%
 
-// int main()
-// {
-//     int x;
-//     while( (x = yylex()) != 0 )
-//     {
-//         printf("encountered token %d", x);
-//     }
-//     return 0;
-// }
