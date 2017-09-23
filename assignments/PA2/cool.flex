@@ -19,6 +19,11 @@
 %x CLASS_NAME_EXTRCTD
 %x CLASS_INHERITS
 %x IDEN_DEC_ENC
+%x METH_DECL_ENC
+%x DETECT_TYPE_ARG
+%x INSIDE_METH_DECL_PAREN
+%x DETECT_RET_TYPE
+
 %{
 
 #include <cool-parse.h>
@@ -90,7 +95,7 @@ MULTI_LINE_COMMENT_END      \*\)
 STR_TOK      ".+"
 INT_TOK         [0-9]+
 IDENTIFIER      [a-z_A-Z]+([a-z_A-Z0-9]*)
-
+OPTWHITE        [ \n\r\t\v\f]*
 LETTER          [a-zA-Z]
 %%
 
@@ -202,7 +207,7 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
     BEGIN(IDEN_DEC_ENC);
     return OBJECTID;
 }
-{IDENTIFIER}/\({WHITESPACE}{IDENTIFIER}{WHITESPACE}:    {
+{IDENTIFIER}/\({OPTWHITE}{IDENTIFIER}{OPTWHITE}:    {
     cool_yylval.symbol = stringtable.add_string(yytext);
     BEGIN(METH_DECL_ENC);
     return OBJECTID;
@@ -223,31 +228,55 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
     return TYPEID;
 }
 
-<METH_DECL_ENC>\(   {   return '('; }
-<METH_DECL_ENC>{WHITESPACE} {
-                            }
+<METH_DECL_ENC>\(   {
+    BEGIN(INSIDE_METH_DECL_PAREN);
+    return '(';
+}
+<METH_DECL_ENC>{WHITESPACE} {}
+
 <METH_DECL_ENC>:    {
-    BEGIN(DETECT_TYPE);
+    BEGIN(DETECT_RET_TYPE);
     return ':';
 }
-<METH_DECL_ENC>{IDENTIFIER} {
+
+<DETECT_RET_TYPE>{WHITESPACE}   {}
+<DETECT_RET_TYPE>{IDENTIFIER}   {
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    BEGIN(INITIAL);
+    return TYPEID;
+}
+
+<INSIDE_METH_DECL_PAREN>{WHITESPACE} {}
+<INSIDE_METH_DECL_PAREN>:    {
+    BEGIN(DETECT_TYPE_ARG);
+    return ':';
+}
+<INSIDE_METH_DECL_PAREN>{IDENTIFIER} {
      cool_yylval.symbol = stringtable.add_string(yytext);
      return OBJECTID;
 }
 
+<INSIDE_METH_DECL_PAREN>\)   {
+    BEGIN(METH_DECL_ENC);
+    return ')';
+}
 
-<DETECT_TYPE>{WHITESPACE} {}
-<DETECT_TYPE>{IDENTIFIER}   {
+<DETECT_TYPE_ARG>{WHITESPACE} {}
+<DETECT_TYPE_ARG>{IDENTIFIER}   {
     cool_yylval.symbol = stringtable.add_string(yytext);
     return TYPEID;
 }
 
-<DETECT_TYPE>\) {
-    BEGIN(INITIAL);
+<DETECT_TYPE_ARG>\) {
+  
+    BEGIN(METH_DECL_ENC);
     return ')';
 }
 
-<DETECT_TYPE>,  {
+<DETECT_TYPE_ARG>,  {
+    BEGIN(INSIDE_METH_DECL_PAREN);
+    return ',';
+}
     
 
 {STR_TOK}   { 
