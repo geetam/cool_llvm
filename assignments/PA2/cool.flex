@@ -102,7 +102,46 @@ LETTER          [a-zA-Z]
  /*
   *  The multiple-character operators.
   */
+
   
+{DARROW}		  { return (DARROW); }/*
+{CLASS}           { return (CLASS); }*/
+{ELSE}            { return (ELSE); }
+{FI}              { return (FI); }
+{IF}              { return (IF); }
+{IN}              { return (IN); }
+{INHERITS}        { return (INHERITS); }
+{ISVOID}          { return (ISVOID); }
+{LET}             { return (LET); }
+{LOOP}            { return (LOOP); }
+{POOL}            { return (POOL); }
+{THEN}            { return (THEN); }
+{WHILE}           { return (WHILE); }
+{CASE}            { return (CASE); }
+{ESAC}            { return (ESAC); }
+{NEW}             { return (NEW); }
+{OF}              { return (OF); }
+{NOT}             { return (NOT); }/*
+TRUE            t(?i:rue)  
+FALSE           f(?i:alse)
+WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
+\+                { return  '+'; }
+"/"               { return  '/'; }
+"-"               { return  '-'; } 
+"*"               { return  '*'; } 
+"="               { return  '='; } 
+"<"               { return  '<'; } 
+"."               { return  '.'; }
+"~"               { return  '~'; }
+","               { return  ','; } 
+";"               { return  ';'; } 
+":"               { return  ':'; }
+"("               { return  '('; } 
+")"               { return  ')'; } 
+"@"               { return  '@'; }
+"{"               { return  '{'; } 
+"}"               { return  '}'; } 
+
 " " {}
 {NEWLINE} {
     curr_lineno++;
@@ -166,6 +205,7 @@ LETTER          [a-zA-Z]
 {IDENTIFIER}/\({WHITESPACE}{IDENTIFIER}{WHITESPACE}:    {
     cool_yylval.symbol = stringtable.add_string(yytext);
     BEGIN(METH_DECL_ENC);
+    return OBJECTID;
 }
 {IDENTIFIER}    {
     cool_yylval.symbol = stringtable.add_string(yytext);
@@ -187,12 +227,28 @@ LETTER          [a-zA-Z]
 <METH_DECL_ENC>{WHITESPACE} {
                             }
 <METH_DECL_ENC>:    {
+    BEGIN(DETECT_TYPE);
     return ':';
 }
 <METH_DECL_ENC>{IDENTIFIER} {
      cool_yylval.symbol = stringtable.add_string(yytext);
      return OBJECTID;
 }
+
+
+<DETECT_TYPE>{WHITESPACE} {}
+<DETECT_TYPE>{IDENTIFIER}   {
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    return TYPEID;
+}
+
+<DETECT_TYPE>\) {
+    BEGIN(INITIAL);
+    return ')';
+}
+
+<DETECT_TYPE>,  {
+    
 
 {STR_TOK}   { 
     cool_yylval.symbol = inttable.add_string(yytext);
