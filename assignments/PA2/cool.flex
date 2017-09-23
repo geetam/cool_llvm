@@ -18,8 +18,7 @@
 %x CLASS_DEF
 %x CLASS_NAME_EXTRCTD
 %x CLASS_INHERITS
-%x IDEN_ENC
-%x ISDECL
+%x IDEN_DEC_ENC
 %{
 
 #include <cool-parse.h>
@@ -83,14 +82,14 @@ OF              (?i:of)
 NOT             (?i:not)
 TRUE            t(?i:rue)
 FALSE           f(?i:alse)
-WHITE_SPACE     [ \n\r\t\v\f]+
+WHITESPACE     [ \n\r\t\v\f]+
 SINGLE_LINE_COMMENT_START   --
 NEWLINE         \n
 MULTI_LINE_COMMENT_START    \(\*
 MULTI_LINE_COMMENT_END      \*\)
 STR_TOK      ".+"
 INT_TOK         [0-9]+
-IDENTIFIER      [a-zA-Z]+([a-zA-Z0-9]*)
+IDENTIFIER      [a-z_A-Z]+([a-z_A-Z0-9]*)
 
 LETTER          [a-zA-Z]
 %%
@@ -104,7 +103,11 @@ LETTER          [a-zA-Z]
   *  The multiple-character operators.
   */
   
-  
+" " {}
+{NEWLINE} {
+            curr_lineno++;
+          }
+          
 
 <INSIDE_SINGLE_LINE_COMMENT>{NEWLINE}   {
                                             BEGIN(INITIAL);
@@ -113,9 +116,10 @@ LETTER          [a-zA-Z]
 
 <INSIDE_MULTI_LINE_COMMENT>{MULTI_LINE_COMMENT_END}     BEGIN(INITIAL);
 
-<INSIDE_MULTI_LINE_COMMENT>(.|\n)  {}
-
-
+<INSIDE_MULTI_LINE_COMMENT>(.)  {}
+<INSIDE_MULTI_LINE_COMMENT>(\n) {
+                                    curr_lineno++;
+                                }
 
 {CLASS}           {
                     BEGIN(CLASS_DEF);
@@ -123,13 +127,13 @@ LETTER          [a-zA-Z]
                   }
 
 
-<CLASS_DEF>{WHITE_SPACE} {}
+<CLASS_DEF>{WHITESPACE} {}
 <CLASS_DEF>{IDENTIFIER} {
                             cool_yylval.symbol = stringtable.add_string(yytext);
                             BEGIN(CLASS_NAME_EXTRCTD);
                             return TYPEID;
                         }
-<CLASS_NAME_EXTRCTD>{WHITE_SPACE} {}
+<CLASS_NAME_EXTRCTD>{WHITESPACE} {}
 <CLASS_NAME_EXTRCTD>"{" {
                             BEGIN(INITIAL);
                             return '{';
@@ -138,7 +142,7 @@ LETTER          [a-zA-Z]
                                 BEGIN(CLASS_INHERITS);
                                 return INHERITS;
                             }
-<CLASS_INHERITS>{WHITE_SPACE} {}
+<CLASS_INHERITS>{WHITESPACE} {}
 <CLASS_INHERITS>{IDENTIFIER} {
                                 cool_yylval.symbol = stringtable.add_string(yytext);
                                 BEGIN(INITIAL);
@@ -151,75 +155,55 @@ LETTER          [a-zA-Z]
 
 
 
-(?<={CLASS}{WHITE_SPACE}){IDENTIFIER}(?={INHERITS}{IDENTIFIER})*/
+(?<={CLASS}{WHITESPACE}){IDENTIFIER}(?={INHERITS}{IDENTIFIER})*/
 
+
+{IDENTIFIER}/{WHITESPACE}:  {
+                                cool_yylval.symbol = stringtable.add_string(yytext);
+                                BEGIN(IDEN_DEC_ENC);
+                                return OBJECTID;
+                            }
+{IDENTIFIER}/\({WHITESPACE}{IDENTIFIER}{WHITESPACE}:    {
+                        cool_yylval.symbol = stringtable.add_string(yytext);
+                        BEGIN(METH_DECL_ENC);
+                        }
 {IDENTIFIER}    {
                     cool_yylval.symbol = stringtable.add_string(yytext);
-                    BEGIN(IDEN_ENC);
                     return OBJECTID;
                 }
-<IDEN_ENC>[^ :] {
-                    BEGIN(INITIAL);
-                }
-<IDEN_ENC>":"   {
-                    BEGIN(ISDECL);
-                    return ':';
-                }
-<IDEN_ENC>" +" {}
-<ISDECL>{WHITE_SPACE} {}
-<ISDECL>{IDENTIFIER}    {
-                            cool_yylval.symbol = stringtable.add_string(yytext);
-                            BEGIN(INITIAL);
-                            return TYPEID;
-                        }
+                
+<IDEN_DEC_ENC>":"   {
+                        return ':';
+                    }
 
-{STR_TOK}         { 
-                    cool_yylval.symbol = inttable.add_string(yytext);
-                    return {STR_CONST};
-                  }
+<IDEN_DEC_ENC>{WHITESPACE} {}
+<IDEN_DEC_ENC>{IDENTIFIER}  {
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    BEGIN(INITIAL);
+    return TYPEID;
+}
+
+<METH_DECL_ENC>\(   {   return '('; }
+<METH_DECL_ENC>{WHITESPACE} {
+                            }
+<METH_DECL_ENC>:    {
+    return ':';
+}
+<METH_DECL_ENC>{IDENTIFIER} {
+     cool_yylval.symbol = stringtable.add_string(yytext);
+     return OBJECTID;
+}
+
+{STR_TOK}   { 
+    cool_yylval.symbol = inttable.add_string(yytext);
+    return {STR_CONST};
+}
 
 {INT_TOK}         {
                     cool_yylval.symbol = inttable.add_string(yytext);
                     return {INT_CONST};
                   }
                     
-{DARROW}		  { return (DARROW); }/*
-{CLASS}           { return (CLASS); }*/
-{ELSE}            { return (ELSE); }
-{FI}              { return (FI); }
-{IF}              { return (IF); }
-{IN}              { return (IN); }
-{INHERITS}        { return (INHERITS); }
-{ISVOID}          { return (ISVOID); }
-{LET}             { return (LET); }
-{LOOP}            { return (LOOP); }
-{POOL}            { return (POOL); }
-{THEN}            { return (THEN); }
-{WHILE}           { return (WHILE); }
-{CASE}            { return (CASE); }
-{ESAC}            { return (ESAC); }
-{NEW}             { return (NEW); }
-{OF}              { return (OF); }
-{NOT}             { return (NOT); }/*
-TRUE            t(?i:rue)  
-FALSE           f(?i:alse)
-WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
-\+                { return  '+'; }
-"/"               { return  '/'; }
-"-"               { return  '-'; } 
-"*"               { return  '*'; } 
-"="               { return  '='; } 
-"<"               { return  '<'; } 
-"."               { return  '.'; }
-"~"               { return  '~'; }
-","               { return  ','; } 
-";"               { return  ';'; } 
-":"               { return  ':'; }
-"("               { return  '('; } 
-")"               { return  ')'; } 
-"@"               { return  '@'; }
-"{"               { return  '{'; } 
-"}"               { return  '}'; } 
 
 
  /*
