@@ -105,49 +105,49 @@ LETTER          [a-zA-Z]
   
 " " {}
 {NEWLINE} {
-            curr_lineno++;
-          }
+    curr_lineno++;
+}
           
 
 <INSIDE_SINGLE_LINE_COMMENT>{NEWLINE}   {
-                                            BEGIN(INITIAL);
-                                        }
+    BEGIN(INITIAL);
+}
 <INSIDE_SINGLE_LINE_COMMENT>(.|\n)  {}
 
 <INSIDE_MULTI_LINE_COMMENT>{MULTI_LINE_COMMENT_END}     BEGIN(INITIAL);
 
 <INSIDE_MULTI_LINE_COMMENT>(.)  {}
 <INSIDE_MULTI_LINE_COMMENT>(\n) {
-                                    curr_lineno++;
-                                }
+    curr_lineno++;
+}
 
-{CLASS}           {
-                    BEGIN(CLASS_DEF);
-                    return (CLASS);
-                  }
+{CLASS} {
+    BEGIN(CLASS_DEF);
+    return (CLASS);
+}
 
 
 <CLASS_DEF>{WHITESPACE} {}
 <CLASS_DEF>{IDENTIFIER} {
-                            cool_yylval.symbol = stringtable.add_string(yytext);
-                            BEGIN(CLASS_NAME_EXTRCTD);
-                            return TYPEID;
-                        }
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    BEGIN(CLASS_NAME_EXTRCTD);
+    return TYPEID;
+}
 <CLASS_NAME_EXTRCTD>{WHITESPACE} {}
 <CLASS_NAME_EXTRCTD>"{" {
-                            BEGIN(INITIAL);
-                            return '{';
-                        }
+    BEGIN(INITIAL);
+    return '{';
+}
 <CLASS_NAME_EXTRCTD>{INHERITS} {
-                                BEGIN(CLASS_INHERITS);
-                                return INHERITS;
-                            }
+    BEGIN(CLASS_INHERITS);
+    return INHERITS;
+}
 <CLASS_INHERITS>{WHITESPACE} {}
 <CLASS_INHERITS>{IDENTIFIER} {
-                                cool_yylval.symbol = stringtable.add_string(yytext);
-                                BEGIN(INITIAL);
-                                return TYPEID;
-                             }
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    BEGIN(INITIAL);
+    return TYPEID;
+}
 
 {SINGLE_LINE_COMMENT_START} {   BEGIN(INSIDE_SINGLE_LINE_COMMENT); }
 {MULTI_LINE_COMMENT_START}  {   BEGIN(INSIDE_MULTI_LINE_COMMENT); }/*
@@ -159,22 +159,22 @@ LETTER          [a-zA-Z]
 
 
 {IDENTIFIER}/{WHITESPACE}:  {
-                                cool_yylval.symbol = stringtable.add_string(yytext);
-                                BEGIN(IDEN_DEC_ENC);
-                                return OBJECTID;
-                            }
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    BEGIN(IDEN_DEC_ENC);
+    return OBJECTID;
+}
 {IDENTIFIER}/\({WHITESPACE}{IDENTIFIER}{WHITESPACE}:    {
-                        cool_yylval.symbol = stringtable.add_string(yytext);
-                        BEGIN(METH_DECL_ENC);
-                        }
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    BEGIN(METH_DECL_ENC);
+}
 {IDENTIFIER}    {
-                    cool_yylval.symbol = stringtable.add_string(yytext);
-                    return OBJECTID;
-                }
+    cool_yylval.symbol = stringtable.add_string(yytext);
+    return OBJECTID;
+}
                 
 <IDEN_DEC_ENC>":"   {
-                        return ':';
-                    }
+    return ':';
+}
 
 <IDEN_DEC_ENC>{WHITESPACE} {}
 <IDEN_DEC_ENC>{IDENTIFIER}  {
@@ -199,10 +199,10 @@ LETTER          [a-zA-Z]
     return {STR_CONST};
 }
 
-{INT_TOK}         {
-                    cool_yylval.symbol = inttable.add_string(yytext);
-                    return {INT_CONST};
-                  }
+{INT_TOK}   {
+    cool_yylval.symbol = inttable.add_string(yytext);
+    return {INT_CONST};
+}
                     
 
 
