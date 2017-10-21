@@ -92,11 +92,12 @@ SINGLE_LINE_COMMENT_START   --
 NEWLINE         \n
 MULTI_LINE_COMMENT_START    \(\*
 MULTI_LINE_COMMENT_END      \*\)
-STR_TOK      ".+"
-INT_TOK         [0-9]+
+STR_TOK         \"[^\"]*\"
+INT_TOK         0|[1-9][0-9]*
 IDENTIFIER      [a-z_A-Z]+([a-z_A-Z0-9]*)
 OPTWHITE        [ \n\r\t\v\f]*
 LETTER          [a-zA-Z]
+ASSIGN          <-
 %%
 
  /*
@@ -108,7 +109,7 @@ LETTER          [a-zA-Z]
   *  The multiple-character operators.
   */
 
-  
+{ASSIGN}          { return {ASSIGN}; }  
 {DARROW}		  { return (DARROW); }/*
 {CLASS}           { return (CLASS); }*/
 {ELSE}            { return (ELSE); }
@@ -207,7 +208,7 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
     BEGIN(IDEN_DEC_ENC);
     return OBJECTID;
 }
-{IDENTIFIER}/\({OPTWHITE}{IDENTIFIER}{OPTWHITE}:    {
+{IDENTIFIER}/\([a-z A-Z_:,]*\){OPTWHITE}:    {
     cool_yylval.symbol = stringtable.add_string(yytext);
     BEGIN(METH_DECL_ENC);
     return OBJECTID;
@@ -280,7 +281,7 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
     
 
 {STR_TOK}   { 
-    cool_yylval.symbol = inttable.add_string(yytext);
+    cool_yylval.symbol = stringtable.add_string(yytext);
     return {STR_CONST};
 }
 
