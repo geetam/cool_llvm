@@ -148,6 +148,10 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
 "{"               { return  '{'; } 
 "}"               { return  '}'; } 
 
+
+
+
+
 " " {}
 {NEWLINE} {
     curr_lineno++;
@@ -159,6 +163,11 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
 }
 <INSIDE_SINGLE_LINE_COMMENT>(.|\n)  {}
 
+<INSIDE_MULTI_LINE_COMMENT><<eof>>  {
+    cool_yylval.error_msg = "EOF in comment";
+    BEGIN(INITIAL);
+    return ERROR;
+}
 <INSIDE_MULTI_LINE_COMMENT>{MULTI_LINE_COMMENT_END}     BEGIN(INITIAL);
 
 <INSIDE_MULTI_LINE_COMMENT>(.)  {}
@@ -351,6 +360,12 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
 }
                     
 
+          
+.   {
+
+    cool_yylval.error_msg = yytext;
+    return ERROR;
+}
 
  /*
   * Keywords are case-insensitive except for the values true and false,
