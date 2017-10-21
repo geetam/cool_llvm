@@ -25,7 +25,7 @@
 %x DETECT_RET_TYPE
 
 %{
-
+#include <string.h>
 #include <cool-parse.h>
 #include <stringtab.h>
 #include <utilities.h>
@@ -281,7 +281,67 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
     
 
 {STR_TOK}   { 
-    cool_yylval.symbol = stringtable.add_string(yytext);
+    int len = strlen(yytext);
+    char *match = strdup(yytext);
+    for(int i = 1; i < len; i++)
+    {
+        match[i - 1] = match[i];
+    }
+    
+    len -= 2;
+    assert(len >= 0);
+    match[len] = '\0';
+    
+    for(int i = 0; i < len; i++)
+    {
+        if(match[i] == '\\')
+        {
+            int toshift = 1;
+            switch(match[i+1])
+            {
+                case '\\':
+                    break;
+                case 'n':
+                    match[i] = '\n';
+                    break;
+                case 'b':
+                    match[i] = '\b';
+                    break;
+                case 'f':
+                    match[i] = '\f';
+                    break;
+                case '"':
+                    match[i] = '"';
+                    break;
+                case '0':
+                    match[i] = '\0';
+                    break;
+                case 't':
+                    match[i] = '\t';
+                    break;
+                case 'r':
+                    match[i] = '\r';
+                    break;
+                    
+                default:
+                    toshift = 0;
+            }
+            
+            if(toshift)
+            {
+                for(int j = i + 2 ; j < len; j++)
+                {
+                    match[j - 1] = match[j];
+                }
+                
+                len--;
+                match[len] = '\0';
+            }
+        }
+    }
+    
+    
+    cool_yylval.symbol = stringtable.add_string(match);
     return {STR_CONST};
 }
 
