@@ -136,11 +136,13 @@
     
     /* You will want to change the following line. */
     %type <features> feature_list
+    %type <features> attr_list
     %type <formal> formal
     %type <formals> formal_list
     %type <expressions> expr_list
     %type <expression> expr
     %type <feature> feature
+    %type <feature> attribute
     /* Precedence declarations go here. */
     
     
@@ -184,7 +186,19 @@
                 }
                 |
                 feature ';' feature_list {
-                    $$ = append_Features(single_Features($1), $2);
+                    $$ = append_Features(single_Features($1), $3);
+                }
+                ;
+    attr_list:   {		/* empty */
+                    $$ = nil_Features();
+                }
+                |
+                attribute {
+                    $$ = single_Features($1);
+                }
+                |
+                attribute ';' feature_list {
+                    $$ = append_Features(single_Features($1), $3);
                 }
                 ;
         
@@ -194,7 +208,7 @@
                  }
                  |
                  formal ',' formal_list {
-                    $$ = append_Formals(single_Formals($1), $2);
+                    $$ = append_Formals(single_Formals($1), $3);
                  }
                 ;
     expr_list: expr {
@@ -202,7 +216,7 @@
                 }
                 |
                 expr ',' expr_list {
-                    $$ = append_Expressions(single_Expressions($1), $2);
+                    $$ = append_Expressions(single_Expressions($1), $3);
                 }
                 ;
                 
@@ -211,13 +225,13 @@
     
     expr:   OBJECTID ASSIGN expr { $$ = assign($1, $3);}
         |   expr '[' '@' TYPEID ']' '.' OBJECTID '(' ')' {
-                $$ = static_dispatch($1, $4, $7, nil_Expressions);
+                $$ = static_dispatch($1, $4, $7, nil_Expressions());
             }
         |   expr '[' '@' TYPEID ']' '.' OBJECTID '(' expr_list ')' {
                 $$ = static_dispatch($1, $4, $7, $9);
             }
-        |   OBJECTID '(' ')' { $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions); }
-        |   OBJECTID '(' expr_list ')' { $$ = dispatch(object(idtable.add_string("self")), $1, expr_list); }
+        |   OBJECTID '(' ')' { $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions() ); }
+        |   OBJECTID '(' expr_list ')' { $$ = dispatch(object(idtable.add_string("self")), $1, $3); }
         
         |   IF expr THEN expr ELSE expr FI {
                 $$ = cond($2, $4, $6);
@@ -225,7 +239,7 @@
         |   WHILE expr LOOP expr POOL   {
                 $$ = loop($2, $4);
             }
-        |   '{' expr_list '}' { $$ = block(expr_list);}
+        |   '{' expr_list '}' { $$ = block($2);}
         |   LET OBJECTID ':' TYPEID
         |   NEW TYPEID  {$$ = new_($2); }
         |   ISVOID expr {$$ = isvoid($2);}
@@ -245,18 +259,20 @@
         ;
     
     
-    
+    attribute:  OBJECTID ':' TYPEID ASSIGN expr{
+                    $$ = attr($1, $3, $5);
+                }
     
     feature:    OBJECTID '(' ')' ':' TYPEID '{' expr '}' {
-                    $$ = method($1, $3, $5, $7);
+                    $$ = method($1, nil_Formals(), $5, $7);
                 }
                 |
                 OBJECTID '(' formal_list ')' ':' TYPEID '{' expr '}' {
-                    $$ = method($1, $3, $6, $7);
+                    $$ = method($1, $3, $6, $8);
                 }
                 |
                 OBJECTID ':' TYPEID {
-                    $$ = attr($1, $3, nil_Expressions);
+                    $$ = attr($1, $3, no_expr());
                 }
                 |
                 OBJECTID ':' TYPEID ASSIGN expr{
