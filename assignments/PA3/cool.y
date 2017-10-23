@@ -135,8 +135,12 @@
     %type <class_> class
     
     /* You will want to change the following line. */
-    %type <features> dummy_feature_list
-    
+    %type <features> feature_list
+    %type <formal> formal
+    %type <formals> formal_list
+    %type <expressions> expr_list
+    %type <expression> expr
+    %type <feature> feature
     /* Precedence declarations go here. */
     
     
@@ -147,30 +151,123 @@
     program	: class_list	{ @$ = @1; ast_root = program($1); }
     ;
     
-    class_list
-    : class			/* single class */
-    { $$ = single_Classes($1);
-    parse_results = $$; }
-    | class_list class	/* several classes */
-    { $$ = append_Classes($1,single_Classes($2)); 
-    parse_results = $$; }
-    ;
+    class_list: class   {			/* single class */
+                
+                    $$ = single_Classes($1);
+                    parse_results = $$;
+                }
+                
+                | 
+                class_list class    {	/* several classes */
+                 
+                    $$ = append_Classes($1,single_Classes($2)); 
+                    parse_results = $$;
+                }
+                ;
     
     /* If no parent is specified, the class inherits from the Object class. */
-    class	: CLASS TYPEID '{' dummy_feature_list '}' ';'
-    { $$ = class_($2,idtable.add_string("Object"),$4,
-    stringtable.add_string(curr_filename)); }
-    | CLASS TYPEID INHERITS TYPEID '{' dummy_feature_list '}' ';'
-    { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
-    ;
+    class	: CLASS TYPEID '{' feature_list '}' ';'
+                { $$ = class_($2, idtable.add_string("Object"), $4,
+                stringtable.add_string(curr_filename)); }
+            |
+            CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';'
+            { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
+            ;
     
     /* Feature list may be empty, but no empty features in list. */
-    dummy_feature_list:		/* empty */
-    {  $$ = nil_Features(); }
+    feature_list:   {		/* empty */
+                    $$ = nil_Features();
+                }
+                |
+                feature {
+                    $$ = single_Features($1);
+                }
+                |
+                feature ';' feature_list {
+                    $$ = append_Features(single_Features($1), $2);
+                }
+                ;
+        
     
+    formal_list: formal {
+                    $$ = single_Formals($1);
+                 }
+                 |
+                 formal ',' formal_list {
+                    $$ = append_Formals(single_Formals($1), $2);
+                 }
+                ;
+    expr_list: expr {
+                    $$ = single_Expressions($1);
+                }
+                |
+                expr ',' expr_list {
+                    $$ = append_Expressions(single_Expressions($1), $2);
+                }
+                ;
+                
+    formal : OBJECTID ':' TYPEID { $$ = formal($1, $3); }
+    
+    
+    expr:   OBJECTID ASSIGN expr { $$ = assign($1, $3);}
+        |   expr '[' '@' TYPEID ']' '.' OBJECTID '(' ')' {
+                $$ = static_dispatch($1, $4, $7, nil_Expressions);
+            }
+        |   expr '[' '@' TYPEID ']' '.' OBJECTID '(' expr_list ')' {
+                $$ = static_dispatch($1, $4, $7, $9);
+            }
+        |   OBJECTID '(' ')' { $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions); }
+        |   OBJECTID '(' expr_list ')' { $$ = dispatch(object(idtable.add_string("self")), $1, expr_list); }
+        
+        |   IF expr THEN expr ELSE expr FI {
+                $$ = cond($2, $4, $6);
+            }
+        |   WHILE expr LOOP expr POOL   {
+                $$ = loop($2, $4);
+            }
+        |   '{' expr_list '}' { $$ = block(expr_list);}
+        |   LET OBJECTID ':' TYPEID
+        |   NEW TYPEID  {$$ = new_($2); }
+        |   ISVOID expr {$$ = isvoid($2);}
+        |   expr '+' expr {$$ = plus($1,  $3);}
+        |   expr '-' expr {$$ = sub($1, $3);}
+        |   expr '*' expr {$$ = mul($1, $3);}
+        |   expr '/' expr {$$ = divide($1, $3);}
+        |   BOOL_CONST  {$$ = bool_const($1);}
+        |   expr '<' expr {$$ = lt($1, $3);}
+        |   expr "<=" expr{$$ = leq($1, $3);}
+        |   expr '=' expr {$$ = eq($1, $3);} 
+        |   NOT expr { $$ = neg($2); }
+        |   '(' expr ')'    {$$ = $2;}
+        |   OBJECTID    {$$ = object($1);}
+        |   STR_CONST   {$$ = string_const($1);}
+        |   INT_CONST   {$$ = int_const($1);}
+        ;
+    
+    
+    
+    
+    feature:    OBJECTID '(' ')' ':' TYPEID '{' expr '}' {
+                    $$ = method($1, $3, $5, $7);
+                }
+                |
+                OBJECTID '(' formal_list ')' ':' TYPEID '{' expr '}' {
+                    $$ = method($1, $3, $6, $7);
+                }
+                |
+                OBJECTID ':' TYPEID {
+                    $$ = attr($1, $3, nil_Expressions);
+                }
+                |
+                OBJECTID ':' TYPEID ASSIGN expr{
+                    $$ = attr($1, $3, $5);
+                }
+                ;
     
     /* end of grammar */
     %%
+    
+    
     
     /* This function is called automatically when Bison detects a parse error. */
     void yyerror(char *s)
