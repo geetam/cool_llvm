@@ -143,6 +143,8 @@
     %type <expression> expr
     %type <feature> feature
     %type <feature> attribute
+    %type <feature> let_feature
+    %type <features> let_feature_list
     /* Precedence declarations go here. */
     
     
@@ -187,6 +189,27 @@
                 |
                 feature ';' feature_list {
                     $$ = append_Features(single_Features($1), $3);
+                }
+                ;
+    
+    let_feature: ',' OBJECTID ':' TYPEID {
+                    $$ = attr($2, $4, no_expr());
+                }
+                |
+                ',' OBJECTID ':' TYPEID ASSIGN expr {
+                    $$ = attr($2, $4, $6);
+                }
+                ;
+    let_feature_list:   {		/* empty */
+                    $$ = nil_Features();
+                }
+                |
+                let_feature {
+                    $$ = single_Features($1);
+                }
+                |
+                let_feature let_feature_list {
+                    $$ = append_Features(single_Features($1), $2);
                 }
                 ;
     attr_list:   {		/* empty */
@@ -240,7 +263,8 @@
                 $$ = loop($2, $4);
             }
         |   '{' expr_list '}' { $$ = block($2);}
-        |   LET OBJECTID ':' TYPEID
+        |   LET OBJECTID ':' TYPEID let_feature_list IN expr {$$ = let($2, $4, no_expr(), $7);}
+        |   LET OBJECTID ':' TYPEID ASSIGN expr let_feature_list IN expr {$$ = let($2, $4, $6, $9);}
         |   NEW TYPEID  {$$ = new_($2); }
         |   ISVOID expr {$$ = isvoid($2);}
         |   expr '+' expr {$$ = plus($1,  $3);}
