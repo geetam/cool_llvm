@@ -249,11 +249,6 @@ void program_class::semant()
    
     std::vector <std::string> ast_tex;
     std::string str;
-//     while(std::getline(std::cin, str))
-//     {
-//         std::cout << "ok";
-//         ast_tex.push_back(str);
-//     }
     ingraph inheri_g;
     
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
@@ -275,7 +270,6 @@ void program_class::semant()
     else {
         std::cout << "no cycles!\n";
     }
-    //dump_with_types(std::cout, 0);
     /* some semantic analysis code may go here */
     if (classtable->errors()) {
 	cerr << "Compilation halted due to static semantic errors." << endl;
