@@ -161,6 +161,15 @@ public:
    }
    Class_ copy_Class_();
    void dump(ostream& stream, int n);
+    
+   char* getName(){
+        return name->get_string();
+   }
+   
+   char* getParent() {
+       return parent->get_string();
+   }
+
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS

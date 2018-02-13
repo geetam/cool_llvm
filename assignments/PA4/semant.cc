@@ -5,6 +5,9 @@
 #include <stdarg.h>
 #include "semant.h"
 #include "utilities.h"
+#include <map>
+#include <vector>
+#include "inheritancegraph.h"
 
 
 extern int semant_debug;
@@ -243,9 +246,37 @@ void program_class::semant()
 
     /* ClassTable constructor may do some semantic analysis */
     ClassTable *classtable = new ClassTable(classes);
-
+   
+    std::vector <std::string> ast_tex;
+    std::string str;
+//     while(std::getline(std::cin, str))
+//     {
+//         std::cout << "ok";
+//         ast_tex.push_back(str);
+//     }
+    ingraph inheri_g;
+    
+    for(int i = classes->first(); classes->more(i); i = classes->next(i))
+    {
+        
+        char *chi_id = reinterpret_cast<class__class*>( classes->nth(i))->getName();
+        idtable.add_string(chi_id);
+        
+        std::string chi = chi_id;
+        std::string par = reinterpret_cast<class__class*>( classes->nth(i))->getParent();
+        inheri_g.add_edge(par, chi);
+    }
+    
+    
+    bool cycle_check = inheri_g.cycle_exists();
+    if(cycle_check) {
+        std::cout << "cycle exists\n";
+    }
+    else {
+        std::cout << "no cycles!\n";
+    }
+    //dump_with_types(std::cout, 0);
     /* some semantic analysis code may go here */
-
     if (classtable->errors()) {
 	cerr << "Compilation halted due to static semantic errors." << endl;
 	exit(1);
