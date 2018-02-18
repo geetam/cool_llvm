@@ -2,13 +2,13 @@
 ASSN = 4
 CLASS= cs143
 CLASSDIR= ../..
-LIB= -L/usr/pubsw/lib -lfl 
+LIB= -L/usr/pubsw/lib   
 AR= gar
 ARCHIVE_NEW= -cr
 RANLIB= gar -qs
 
-SRC= semant.cc semant.h cool-tree.h cool-tree.handcode.h good.cl bad.cl README
-CSRC= semant-phase.cc symtab_example.cc  handle_flags.cc  ast-lex.cc ast-parse.cc utilities.cc stringtab.cc dumptype.cc tree.cc cool-tree.cc
+SRC= semant.cc semant.h cool-tree.h cool-tree.handcode.h inheritancegraph.h good.cl bad.cl README
+CSRC= semant-phase.cc symtab_example.cc inheritancegraph.cc handle_flags.cc  ast-lex.cc ast-parse.cc utilities.cc stringtab.cc dumptype.cc tree.cc cool-tree.cc
 TSRC= mycoolc mysemant cool-tree.aps
 CGEN=
 HGEN=
@@ -48,7 +48,7 @@ change-prot:
 SEMANT_OBJS := ${filter-out symtab_example.o,${OBJS}}
 
 semant:  ${SEMANT_OBJS} lexer parser cgen
-	${CC} ${CFLAGS} ${SEMANT_OBJS} ${LIB} -o semant
+	${CC} ${CFLAGS}  ${SEMANT_OBJS} ${LIB} -o semant
 
 symtab_example: symtab_example.cc 
 	${CC} ${CFLAGS} symtab_example.cc ${LIB} -o symtab_example
