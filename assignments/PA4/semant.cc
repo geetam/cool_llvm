@@ -270,6 +270,12 @@ void program_class::semant()
     else {
         std::cout << "no cycles!\n";
     }
+    
+    for(int i = classes->first(); classes->more(i); i = classes->next(i))
+    {
+        classes->nth(i)->check_type();
+    }
+    
     /* some semantic analysis code may go here */
     if (classtable->errors()) {
 	cerr << "Compilation halted due to static semantic errors." << endl;

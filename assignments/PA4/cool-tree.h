@@ -49,7 +49,7 @@ class Feature_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Feature(); }
    virtual Feature copy_Feature() = 0;
-
+    Symbol check_type() override;
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
 #endif
@@ -159,7 +159,7 @@ public:
       features = a3;
       filename = a4;
    }
-   Class_ copy_Class_();
+   Class_ copy_Class_() override;
    void dump(ostream& stream, int n);
     
    char* getName(){
@@ -169,6 +169,8 @@ public:
    char* getParent() {
        return parent->get_string();
    }
+   
+   Symbol check_type() override;
 
 
 #ifdef Class__SHARED_EXTRAS
@@ -220,7 +222,7 @@ public:
    }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
-
+    Symbol check_type() override;
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -684,9 +686,10 @@ public:
    bool_const_class(Boolean a1) {
       val = a1;
    }
+   void set_type(Symbol s);
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
+    Symbol check_type() override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -843,3 +846,4 @@ Expression object(Symbol);
 
 
 #endif
+

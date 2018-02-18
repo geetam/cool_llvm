@@ -56,6 +56,7 @@ public:
     tree_node();
     virtual tree_node *copy() = 0;
     virtual ~tree_node() { }
+    virtual Symbol check_type() { } 
     virtual void dump(ostream& stream, int n) = 0;
     int get_line_number();
     tree_node *set(tree_node *);

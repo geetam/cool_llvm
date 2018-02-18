@@ -41,6 +41,13 @@ void class__class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, filename);
 }
 
+Symbol class__class::check_type()
+{
+        for(int i = features->first(); features->more(i); i++)
+        {
+            features->nth(i)->check_type();
+        }
+}
 
 Feature method_class::copy_Feature()
 {
@@ -71,6 +78,15 @@ void attr_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, type_decl);
    init->dump(stream, n+2);
 }
+
+Symbol attr_class::check_type()
+{
+    if(dynamic_cast<no_expr_class*>(init) == nullptr)
+    {
+        return init->check_type();
+    }
+}
+
 
 
 Formal formal_class::copy_Formal()
@@ -368,6 +384,12 @@ void bool_const_class::dump(ostream& stream, int n)
    dump_Boolean(stream, n+2, val);
 }
 
+Symbol bool_const_class::check_type()
+{
+    type = idtable.add_string("Bool");
+    return type;
+}
+
 
 Expression string_const_class::copy_Expression()
 {
@@ -433,6 +455,25 @@ void object_class::dump(ostream& stream, int n)
 }
 
 
+
+Symbol Feature_class::check_type()
+{
+    attr_class *att = dynamic_cast<attr_class*>(this);
+    
+    if(att)
+    {
+        return att->check_type();
+    }
+    else
+    {
+        method_class *meth = dynamic_cast<method_class*>(this);
+        if(meth) 
+        {
+            return meth->check_type();
+        }
+    }
+    return idtable.add_string("_no_type");
+}
 // interfaces used by Bison
 Classes nil_Classes()
 {
