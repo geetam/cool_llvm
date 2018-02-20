@@ -253,7 +253,6 @@ void program_class::semant()
     inheri_g.add_edge("Object", "Int");
     inheri_g.add_edge("Object", "String");
     inheri_g.add_edge("Object", "Bool");
-    
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         
@@ -264,7 +263,6 @@ void program_class::semant()
         std::string par = reinterpret_cast<class__class*>( classes->nth(i))->getParent();
         inheri_g.add_edge(par, chi);
     }
-    
     
     bool cycle_check = inheri_g.cycle_exists();
     if(cycle_check) {
@@ -279,6 +277,9 @@ void program_class::semant()
         classes->nth(i)->check_type();
     }
     
+    std::cout << "join  of A and B is: " << inheri_g.join_of_types("A", "B") << "\n";
+    std::cout << "join  of B and C is: " << inheri_g.join_of_types("B", "C") << "\n";
+    std::cout << "join  of A and C is: " << inheri_g.join_of_types("A", "C") << "\n";
     /* some semantic analysis code may go here */
     if (classtable->errors()) {
 	cerr << "Compilation halted due to static semantic errors." << endl;
