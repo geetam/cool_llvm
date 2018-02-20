@@ -250,6 +250,9 @@ void program_class::semant()
     std::vector <std::string> ast_tex;
     std::string str;
     ingraph inheri_g;
+    inheri_g.add_edge("Object", "Int");
+    inheri_g.add_edge("Object", "String");
+    inheri_g.add_edge("Object", "Bool");
     
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
