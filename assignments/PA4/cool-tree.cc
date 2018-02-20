@@ -375,6 +375,11 @@ void int_const_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, token);
 }
 
+Symbol int_const_class::check_type()
+{
+    type = idtable.add_string("Int");
+    return type;
+}
 
 Expression bool_const_class::copy_Expression()
 {
@@ -398,6 +403,12 @@ Symbol bool_const_class::check_type()
 Expression string_const_class::copy_Expression()
 {
    return new string_const_class(copy_Symbol(token));
+}
+
+Symbol string_const_class::check_type()
+{
+    type = idtable.add_string("String");
+    return type;
 }
 
 
