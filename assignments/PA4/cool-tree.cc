@@ -83,8 +83,12 @@ Symbol attr_class::check_type()
 {
     if(dynamic_cast<no_expr_class*>(init) == nullptr)
     {
-        return init->check_type();
+        type = init->check_type();
+    } else { //expr assigned is no_expr
+        type = type_decl;
     }
+    
+    return type;
 }
 
 

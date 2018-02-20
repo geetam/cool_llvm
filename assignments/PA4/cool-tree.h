@@ -213,6 +213,7 @@ class attr_class : public Feature_class {
 protected:
    Symbol name;
    Symbol type_decl;
+   Symbol type;
    Expression init;
 public:
    attr_class(Symbol a1, Symbol a2, Expression a3) {
