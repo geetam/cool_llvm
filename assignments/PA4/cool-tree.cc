@@ -10,8 +10,9 @@
 #include "tree.h"
 #include "cool-tree.handcode.h"
 #include "cool-tree.h"
+#include "semanterror.h"
 
-
+extern SemantError serror;
 // constructors' functions
 Program program_class::copy_Program()
 {
@@ -250,6 +251,34 @@ void plus_class::dump(ostream& stream, int n)
    stream << pad(n) << "plus\n";
    e1->dump(stream, n+2);
    e2->dump(stream, n+2);
+}
+
+Symbol plus_class::check_type()
+{
+    std::string type1 = e1->check_type()->get_string();
+    std::string type2 = e2->check_type()->get_string();
+    
+    bool ok = true;
+    if(type1 != "Int")
+    {
+        serror.print_error(get_line_number(),"type of left expression is NOT Int");
+        ok = false;
+    }
+    
+    if(type2 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of right expression is NOT Int");
+        ok = false;
+    }
+    
+    if(ok)
+    {
+        type = idtable.add_string("Int");
+    } else {
+        type = idtable.add_string("Object");
+    }
+    
+        
 }
 
 

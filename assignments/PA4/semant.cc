@@ -8,11 +8,11 @@
 #include <map>
 #include <vector>
 #include "inheritancegraph.h"
-
+#include "semanterror.h"
 
 extern int semant_debug;
 extern char *curr_filename;
-
+extern SemantError serror;
 //////////////////////////////////////////////////////////////////////
 //
 // Symbols
@@ -281,9 +281,9 @@ void program_class::semant()
     std::cout << "join  of B and C is: " << inheri_g.join_of_types("B", "C") << "\n";
     std::cout << "join  of A and C is: " << inheri_g.join_of_types("A", "C") << "\n";
     /* some semantic analysis code may go here */
-    if (classtable->errors()) {
-	cerr << "Compilation halted due to static semantic errors." << endl;
-	exit(1);
+    if (serror.get_num_errors()) {
+        cerr << "Compilation halted due to static semantic errors." << endl;
+        exit(1);
     }
 }
 
