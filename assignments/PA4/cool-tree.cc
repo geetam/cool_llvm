@@ -278,6 +278,7 @@ Symbol plus_class::check_type()
         type = idtable.add_string("Object");
     }
     
+    return type;
         
 }
 
