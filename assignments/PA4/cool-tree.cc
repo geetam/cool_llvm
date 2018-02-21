@@ -450,6 +450,12 @@ Expression no_expr_class::copy_Expression()
    return new no_expr_class();
 }
 
+Symbol no_expr_class::check_type()
+{
+    type = idtable.add_string("No_type");
+    return type;
+}
+
 
 void no_expr_class::dump(ostream& stream, int n)
 {
