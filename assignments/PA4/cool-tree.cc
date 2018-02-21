@@ -296,6 +296,36 @@ void sub_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
+Symbol sub_class::check_type()
+{
+    std::string type1 = e1->check_type()->get_string();
+    std::string type2 = e2->check_type()->get_string();
+    
+    bool ok = true;
+    if(type1 != "Int")
+    {
+        serror.print_error(get_line_number(),"type of left expression is NOT Int");
+        ok = false;
+    }
+    
+    if(type2 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of right expression is NOT Int");
+        ok = false;
+    }
+    
+    if(ok)
+    {
+        type = idtable.add_string("Int");
+    } else {
+        type = idtable.add_string("Object");
+    }
+    
+    return type;
+        
+}
+
+
 
 Expression mul_class::copy_Expression()
 {
@@ -308,6 +338,35 @@ void mul_class::dump(ostream& stream, int n)
    stream << pad(n) << "mul\n";
    e1->dump(stream, n+2);
    e2->dump(stream, n+2);
+}
+
+Symbol mul_class::check_type()
+{
+    std::string type1 = e1->check_type()->get_string();
+    std::string type2 = e2->check_type()->get_string();
+    
+    bool ok = true;
+    if(type1 != "Int")
+    {
+        serror.print_error(get_line_number(),"type of left expression is NOT Int");
+        ok = false;
+    }
+    
+    if(type2 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of right expression is NOT Int");
+        ok = false;
+    }
+    
+    if(ok)
+    {
+        type = idtable.add_string("Int");
+    } else {
+        type = idtable.add_string("Object");
+    }
+    
+    return type;
+        
 }
 
 
@@ -324,6 +383,34 @@ void divide_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
+Symbol divide_class::check_type()
+{
+    std::string type1 = e1->check_type()->get_string();
+    std::string type2 = e2->check_type()->get_string();
+    
+    bool ok = true;
+    if(type1 != "Int")
+    {
+        serror.print_error(get_line_number(),"type of left expression is NOT Int");
+        ok = false;
+    }
+    
+    if(type2 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of right expression is NOT Int");
+        ok = false;
+    }
+    
+    if(ok)
+    {
+        type = idtable.add_string("Int");
+    } else {
+        type = idtable.add_string("Object");
+    }
+    
+    return type;
+        
+}
 
 Expression neg_class::copy_Expression()
 {
