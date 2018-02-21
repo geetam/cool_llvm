@@ -271,6 +271,7 @@ void program_class::semant()
     }
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
+        curr_filename = classes->nth(i)->get_filename()->get_string();
         classes->nth(i)->check_type();
     }
     /* some semantic analysis code may go here */
