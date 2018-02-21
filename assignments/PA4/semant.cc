@@ -266,20 +266,13 @@ void program_class::semant()
     
     bool cycle_check = inheri_g.cycle_exists();
     if(cycle_check) {
-        std::cout << "cycle exists\n";
+        serror.print_error(get_line_number(), "The program has cyclic inheritance");
+        exit(1);
     }
-    else {
-        std::cout << "no cycles!\n";
-    }
-    
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         classes->nth(i)->check_type();
     }
-    
-    std::cout << "join  of A and B is: " << inheri_g.join_of_types("A", "B") << "\n";
-    std::cout << "join  of B and C is: " << inheri_g.join_of_types("B", "C") << "\n";
-    std::cout << "join  of A and C is: " << inheri_g.join_of_types("A", "C") << "\n";
     /* some semantic analysis code may go here */
     if (serror.get_num_errors()) {
         cerr << "Compilation halted due to static semantic errors." << endl;
