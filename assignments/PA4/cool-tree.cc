@@ -6,7 +6,7 @@
 //
 //////////////////////////////////////////////////////////
 
-
+#include <set>
 #include "tree.h"
 #include "cool-tree.handcode.h"
 #include "cool-tree.h"
@@ -464,6 +464,29 @@ void eq_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
+Symbol eq_class::check_type()
+{
+    std::string type1 = e1->check_type()->get_string();
+    std::string type2 = e2->check_type()->get_string();
+    //being optimistic here
+    type = idtable.add_string("Bool");
+
+    //in case t1 or t2 is one of Int, String or bool and t1 != t2, report error.
+    std::set <std::string> basic_types = {"Int", "String", "Bool"};
+    
+    if(basic_types.count(type1) || basic_types.count(type2) )
+    {
+        if(type1 != type2)
+        {
+            serror.print_error(get_line_number(), "The expressions being compared are not of same type,\n"\
+                                                  "and one of the types is Int, String or Bool" );
+            type = idtable.add_string("Object");
+        }
+    }
+    
+    return type;
+    
+}
 
 Expression leq_class::copy_Expression()
 {
