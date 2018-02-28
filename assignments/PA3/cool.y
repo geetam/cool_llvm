@@ -275,7 +275,8 @@
         |   expr '<' expr {$$ = lt($1, $3);}
         |   expr "<=" expr{$$ = leq($1, $3);}
         |   expr '=' expr {$$ = eq($1, $3);} 
-        |   NOT expr { $$ = neg($2); }
+        |   NOT expr { $$ = comp($2); }
+        |   '~' expr {$$ = neg($2); }
         |   '(' expr ')'    {$$ = $2;}
         |   OBJECTID    {$$ = object($1);}
         |   STR_CONST   {$$ = string_const($1);}
