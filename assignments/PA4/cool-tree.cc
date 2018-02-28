@@ -488,7 +488,7 @@ Symbol comp_class::check_type()
 {
     if(strcmp(e1->check_type()->get_string(), "Bool") != 0)
     {
-        serror.print_error(get_line_number(), "negation used with a non bool");
+        serror.print_error(get_line_number(), " \"Not\" used with a non bool");
         type = idtable.add_string("Object");
     } else {
         type = idtable.add_string("Bool");
