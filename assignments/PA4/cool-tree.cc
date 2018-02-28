@@ -424,6 +424,18 @@ void neg_class::dump(ostream& stream, int n)
    e1->dump(stream, n+2);
 }
 
+Symbol neg_class::check_type()
+{
+    if(strcmp(e1->check_type()->get_string(), "Bool") != 0)
+    {
+        serror.print_error(get_line_number(), "negation used with a non bool");
+        type = idtable.add_string("Object");
+    } else {
+        type = idtable.add_string("Bool");
+    }
+    
+    return type;
+}
 
 Expression lt_class::copy_Expression()
 {
