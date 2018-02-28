@@ -586,6 +586,13 @@ void isvoid_class::dump(ostream& stream, int n)
    e1->dump(stream, n+2);
 }
 
+Symbol isvoid_class::check_type()
+{
+    e1->check_type();
+    
+    type = idtable.add_string("Bool");
+    return type;
+}
 
 Expression no_expr_class::copy_Expression()
 {
