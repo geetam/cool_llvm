@@ -1,3 +1,6 @@
+#ifndef INHERITANCEGRAPH_H
+#define INHERITANCEGRAPH_H
+
 #include <map>
 #include <vector>
 
@@ -14,3 +17,4 @@ public:
     std::string join_of_types(const std::string &type1, const std::string &type2);
     void dump_edges();
 };
+#endif
