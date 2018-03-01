@@ -2,7 +2,7 @@
 #include <iostream>
 #include <assert.h>
 
-void ingraph::add_edge(std::string v1, std::string v2)
+void ingraph::add_edge(const std::string &v1, const std::string &v2)
 {
     adj_li[v1].push_back(v2);
     transpose[v2].push_back(v1);
