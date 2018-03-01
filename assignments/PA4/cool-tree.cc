@@ -450,6 +450,33 @@ void lt_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
+Symbol lt_class::check_type()
+{
+    std::string type1 = e1->check_type()->get_string();
+    std::string type2 = e2->check_type()->get_string();
+    
+    bool ok = true;
+    if(type1 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of left expression of '<' operator isn't Int");
+        ok = false;
+    }
+    if(type2 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of right expression of '<' operator isn't Int");
+        ok = false;
+    }
+    
+    if(ok)
+    {
+        type = idtable.add_string("Bool");
+    } else {
+        type = idtable.add_string("Object");
+    }
+    
+    return type;
+}
+
 
 Expression eq_class::copy_Expression()
 {
@@ -501,6 +528,32 @@ void leq_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
+Symbol leq_class::check_type()
+{
+    std::string type1 = e1->check_type()->get_string();
+    std::string type2 = e2->check_type()->get_string();
+    
+    bool ok = true;
+    if(type1 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of left expression of '<=' operator isn't Int");
+        ok = false;
+    }
+    if(type2 != "Int")
+    {
+        serror.print_error(get_line_number(), "type of right expression of '<=' operator isn't Int");
+        ok = false;
+    }
+    
+    if(ok)
+    {
+        type = idtable.add_string("Bool");
+    } else {
+        type = idtable.add_string("Object");
+    }
+    
+    return type;
+}
 
 Expression comp_class::copy_Expression()
 {
