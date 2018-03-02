@@ -249,7 +249,7 @@ void program_class::semant()
    
     std::vector <std::string> ast_tex;
     std::string str;
-    ingraph inheri_g;
+    InheritanceGraph inheri_g;
     inheri_g.add_edge("Object", "Int");
     inheri_g.add_edge("Object", "String");
     inheri_g.add_edge("Object", "Bool");

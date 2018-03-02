@@ -2,7 +2,7 @@
 #include <iostream>
 #include <assert.h>
 
-void ingraph::add_edge(const std::string &v1, const std::string &v2)
+void InheritanceGraph::add_edge(const std::string &v1, const std::string &v2)
 {
     adj_li[v1].push_back(v2);
     transpose[v2].push_back(v1);
@@ -10,7 +10,7 @@ void ingraph::add_edge(const std::string &v1, const std::string &v2)
 
 
 //TODO: make it iterative
-bool ingraph::cycle_exists()
+bool InheritanceGraph::cycle_exists()
 {
     for(auto ad_it = adj_li.begin(); ad_it != adj_li.end(); ad_it++)
     {
@@ -33,7 +33,7 @@ bool ingraph::cycle_exists()
     return false;
 }
 
-bool ingraph::dfs_visit(std::string v)
+bool InheritanceGraph::dfs_visit(std::string v)
 {
     color_map[v] = 'g';
     for(auto it = adj_li[v].begin(); it != adj_li[v].end(); it++)
@@ -53,7 +53,7 @@ bool ingraph::dfs_visit(std::string v)
 }
 
 //following must be called only if graph is a tree
-std::string ingraph::join_of_types(const std::string& type1, const std::string& type2)
+std::string InheritanceGraph::join_of_types(const std::string& type1, const std::string& type2)
 {
     std::string ret = "Object";
     //assert(transpose.count("Object") == 0);
@@ -88,7 +88,7 @@ std::string ingraph::join_of_types(const std::string& type1, const std::string& 
 }
 
 
-void ingraph::dump_edges()
+void InheritanceGraph::dump_edges()
 {
     for(auto ad_it = adj_li.begin(); ad_it != adj_li.end(); ad_it++)
     {

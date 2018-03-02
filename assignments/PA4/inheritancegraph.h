@@ -5,7 +5,7 @@
 #include <vector>
 
 
-class ingraph {
+class InheritanceGraph {
 private:
     std::map < std::string, std::vector < std::string> > adj_li;
     std::map < std::string, std::vector < std::string> > transpose;
