@@ -272,6 +272,7 @@ void program_class::semant()
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         curr_filename = classes->nth(i)->get_filename()->get_string();
+        env.current_class = reinterpret_cast<class__class*>( classes->nth(i))->getName();
         classes->nth(i)->check_type(env);
     }
     /* some semantic analysis code may go here */

@@ -9,6 +9,7 @@ class Environment {
 public:
     InheritanceGraph igraph;
     SymbolTable <Symbol, Symbol> symbol_table;
+    Symbol current_class;
 };
 
 #endif
