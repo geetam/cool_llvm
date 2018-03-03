@@ -162,12 +162,12 @@ public:
    Class_ copy_Class_() override;
    void dump(ostream& stream, int n);
     
-   char* getName(){
-        return name->get_string();
+   Symbol getName(){
+        return name;
    }
    
-   char* getParent() {
-       return parent->get_string();
+   Symbol getParent() {
+       return parent;
    }
    
    Symbol check_type(const Environment &env) override;

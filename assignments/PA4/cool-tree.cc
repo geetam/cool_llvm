@@ -84,7 +84,11 @@ Symbol attr_class::check_type(const Environment &env)
 {
     if(dynamic_cast<no_expr_class*>(init) == nullptr)
     {
-        type = init->check_type(env);
+        Symbol type_init = init->check_type(env);
+//         if(env.igraph.join_of_types(type_init, type_decl) == type_decl) //type_init conforms to type_decl
+//         {
+//             
+//         }
     } else { //expr assigned is no_expr
         type = type_decl;
     }

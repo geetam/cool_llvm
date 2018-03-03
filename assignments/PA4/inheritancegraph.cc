@@ -1,8 +1,9 @@
 #include "inheritancegraph.h"
 #include <iostream>
 #include <assert.h>
+#include "stringtab.h"
 
-void InheritanceGraph::add_edge(const std::string &v1, const std::string &v2)
+void InheritanceGraph::add_edge(const Symbol v1, const Symbol v2)
 {
     adj_li[v1].push_back(v2);
     transpose[v2].push_back(v1);
@@ -12,8 +13,8 @@ void InheritanceGraph::add_edge(const std::string &v1, const std::string &v2)
 //TODO: make it iterative
 bool InheritanceGraph::cycle_exists() const
 {
-    std::map < std::string, char> color_map;
-    for(map_str_vec::const_iterator ad_it = adj_li.begin(); ad_it != adj_li.end(); ad_it++)
+    std::map < Symbol, char> color_map;
+    for( map_sym_vec::const_iterator ad_it = adj_li.begin(); ad_it != adj_li.end(); ad_it++)
     {
         color_map[ad_it->first] = 'w';
     }
@@ -22,7 +23,7 @@ bool InheritanceGraph::cycle_exists() const
     {
         if( color_map[ad_it->first] == 'w')
         {
-            bool ret = dfs_visit(ad_it->first);
+            bool ret = dfs_visit(ad_it->first, color_map);
             if(ret)
             {
                 return true;
@@ -34,11 +35,10 @@ bool InheritanceGraph::cycle_exists() const
     return false;
 }
 
-bool InheritanceGraph::dfs_visit(const std::string &v) const
+bool InheritanceGraph::dfs_visit(const Symbol v, std::map <Symbol, char> &color_map) const
 {
-    std::map < std::string, char> color_map;
     color_map[v] = 'g';
-    for(std::vector<std::string>::const_iterator it = adj_li.at(v).begin(); it != adj_li.at(v).end(); it++)
+    for(std::vector<Symbol>::const_iterator it = adj_li.at(v).begin(); it != adj_li.at(v).end(); it++)
     {
         if( color_map[*it] == 'g')
         {
@@ -46,7 +46,7 @@ bool InheritanceGraph::dfs_visit(const std::string &v) const
         }
         else if(color_map[*it] == 'w')
         {
-            return dfs_visit(*it);
+            return dfs_visit(*it, color_map);
         }
     }
     
@@ -55,10 +55,10 @@ bool InheritanceGraph::dfs_visit(const std::string &v) const
 }
 
 //following must be called only if graph is a tree
-std::string InheritanceGraph::join_of_types (const std::string& type1, const std::string& type2 ) const
+Symbol InheritanceGraph::join_of_types (const Symbol type1, const Symbol type2 ) const
 {
-    std::map < std::string, char> color_map;
-    std::string ret = "Object";
+    std::map < Symbol, char> color_map;
+    Symbol ret = idtable.add_string("Object");
     //assert(transpose.count("Object") == 0);
     for(auto ad_it = transpose.begin(); ad_it != transpose.end(); ad_it++)
     {
@@ -66,7 +66,7 @@ std::string InheritanceGraph::join_of_types (const std::string& type1, const std
        // assert(ad_it->second.size() == 1);
     }
     
-    std::string str = type1;
+    Symbol str = type1;
     color_map[str] = 'b';
     transpose.at(str);
     while(transpose.at(str).size() == 1)
@@ -75,7 +75,7 @@ std::string InheritanceGraph::join_of_types (const std::string& type1, const std
         str = *transpose.at(str).begin();
         color_map[str] = 'b';
     }
-    assert(color_map["Object"] == 'b');
+    assert(color_map[idtable.add_string("Object")] == 'b');
     
     if(color_map[type2] == 'b') {
         ret = type2;
@@ -98,7 +98,7 @@ void InheritanceGraph::dump_edges() const
     {
         for(auto li_it = ad_it->second.begin(); li_it != ad_it->second.end(); li_it++)
         {
-            std::cout << "Edge from " << ad_it->first << " to " << *li_it << "\n";
+            std::cout << "Edge from " << ad_it->first->get_string() << " to " << (*li_it)->get_string() << "\n";
         }
     }
 }

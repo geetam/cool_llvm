@@ -247,22 +247,25 @@ void program_class::semant()
     /* ClassTable constructor may do some semantic analysis */
     ClassTable *classtable = new ClassTable(classes);
     Environment env;
-    env.igraph.add_edge("Object", "Int");
-    env.igraph.add_edge("Object", "String");
-    env.igraph.add_edge("Object", "Bool");
+    Symbol object_s = idtable.add_string("Object"),
+           int_s = idtable.add_string("Int"),
+           bool_s = idtable.add_string("Bool"),
+           string_s = idtable.add_string("String");
+           
+    env.igraph.add_edge(object_s, int_s);
+    env.igraph.add_edge(object_s, string_s);
+    env.igraph.add_edge(object_s, bool_s);
+    
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         
-        char *chi_id = reinterpret_cast<class__class*>( classes->nth(i))->getName();
-        idtable.add_string(chi_id);
-        
-        std::string chi = chi_id;
-        std::string par = reinterpret_cast<class__class*>( classes->nth(i))->getParent();
+        Symbol chi = reinterpret_cast<class__class*>( classes->nth(i))->getName();
+        Symbol par = reinterpret_cast<class__class*>( classes->nth(i))->getParent();
         env.igraph.add_edge(par, chi);
     }
-    
     bool cycle_check = env.igraph.cycle_exists();
     if(cycle_check) {
+        std::cout << "nope";
         serror.print_error(get_line_number(), "The program has cyclic inheritance");
         exit(1);
     }
