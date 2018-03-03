@@ -11,7 +11,7 @@
 
 #include "tree.h"
 #include "cool-tree.handcode.h"
-
+#include "environment.h"
 
 // define the class for phylum
 // define simple phylum - Program
@@ -49,7 +49,7 @@ class Feature_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Feature(); }
    virtual Feature copy_Feature() = 0;
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
 #endif
@@ -170,7 +170,7 @@ public:
        return parent->get_string();
    }
    
-   Symbol check_type() override;
+   Symbol check_type(const Environment &env) override;
 
 
 #ifdef Class__SHARED_EXTRAS
@@ -223,7 +223,7 @@ public:
    }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -477,7 +477,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -499,7 +499,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -521,7 +521,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -543,7 +543,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -563,7 +563,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -585,7 +585,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -607,7 +607,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
     
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -630,7 +630,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -650,7 +650,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -670,7 +670,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -691,7 +691,7 @@ public:
    void set_type(Symbol s);
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -711,7 +711,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -751,7 +751,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -769,7 +769,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    Symbol check_type() override;
+    Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

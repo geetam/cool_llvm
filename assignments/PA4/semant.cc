@@ -7,7 +7,7 @@
 #include "utilities.h"
 #include <map>
 #include <vector>
-#include "inheritancegraph.h"
+#include "environment.h"
 #include "semanterror.h"
 
 extern int semant_debug;
@@ -246,10 +246,10 @@ void program_class::semant()
 
     /* ClassTable constructor may do some semantic analysis */
     ClassTable *classtable = new ClassTable(classes);
-    InheritanceGraph inheri_g;
-    inheri_g.add_edge("Object", "Int");
-    inheri_g.add_edge("Object", "String");
-    inheri_g.add_edge("Object", "Bool");
+    Environment env;
+    env.igraph.add_edge("Object", "Int");
+    env.igraph.add_edge("Object", "String");
+    env.igraph.add_edge("Object", "Bool");
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         
@@ -258,10 +258,10 @@ void program_class::semant()
         
         std::string chi = chi_id;
         std::string par = reinterpret_cast<class__class*>( classes->nth(i))->getParent();
-        inheri_g.add_edge(par, chi);
+        env.igraph.add_edge(par, chi);
     }
     
-    bool cycle_check = inheri_g.cycle_exists();
+    bool cycle_check = env.igraph.cycle_exists();
     if(cycle_check) {
         serror.print_error(get_line_number(), "The program has cyclic inheritance");
         exit(1);
@@ -269,7 +269,7 @@ void program_class::semant()
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         curr_filename = classes->nth(i)->get_filename()->get_string();
-        classes->nth(i)->check_type();
+        classes->nth(i)->check_type(env);
     }
     /* some semantic analysis code may go here */
     if (serror.get_num_errors()) {

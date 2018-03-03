@@ -42,11 +42,11 @@ void class__class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, filename);
 }
 
-Symbol class__class::check_type()
+Symbol class__class::check_type(const Environment &env)
 {
         for(int i = features->first(); features->more(i); i++)
         {
-            features->nth(i)->check_type();
+            features->nth(i)->check_type(env);
         }
 }
 
@@ -80,11 +80,11 @@ void attr_class::dump(ostream& stream, int n)
    init->dump(stream, n+2);
 }
 
-Symbol attr_class::check_type()
+Symbol attr_class::check_type(const Environment &env)
 {
     if(dynamic_cast<no_expr_class*>(init) == nullptr)
     {
-        type = init->check_type();
+        type = init->check_type(env);
     } else { //expr assigned is no_expr
         type = type_decl;
     }
@@ -253,10 +253,10 @@ void plus_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-Symbol plus_class::check_type()
+Symbol plus_class::check_type(const Environment &env)
 {
-    std::string type1 = e1->check_type()->get_string();
-    std::string type2 = e2->check_type()->get_string();
+    std::string type1 = e1->check_type(env)->get_string();
+    std::string type2 = e2->check_type(env)->get_string();
     
     bool ok = true;
     if(type1 != "Int")
@@ -296,10 +296,10 @@ void sub_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-Symbol sub_class::check_type()
+Symbol sub_class::check_type(const Environment &env)
 {
-    std::string type1 = e1->check_type()->get_string();
-    std::string type2 = e2->check_type()->get_string();
+    std::string type1 = e1->check_type(env)->get_string();
+    std::string type2 = e2->check_type(env)->get_string();
     
     bool ok = true;
     if(type1 != "Int")
@@ -340,10 +340,10 @@ void mul_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-Symbol mul_class::check_type()
+Symbol mul_class::check_type(const Environment &env)
 {
-    std::string type1 = e1->check_type()->get_string();
-    std::string type2 = e2->check_type()->get_string();
+    std::string type1 = e1->check_type(env)->get_string();
+    std::string type2 = e2->check_type(env)->get_string();
     
     bool ok = true;
     if(type1 != "Int")
@@ -383,10 +383,10 @@ void divide_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-Symbol divide_class::check_type()
+Symbol divide_class::check_type(const Environment &env)
 {
-    std::string type1 = e1->check_type()->get_string();
-    std::string type2 = e2->check_type()->get_string();
+    std::string type1 = e1->check_type(env)->get_string();
+    std::string type2 = e2->check_type(env)->get_string();
     
     bool ok = true;
     if(type1 != "Int")
@@ -424,9 +424,9 @@ void neg_class::dump(ostream& stream, int n)
    e1->dump(stream, n+2);
 }
 
-Symbol neg_class::check_type()
+Symbol neg_class::check_type(const Environment &env)
 {
-    if(strcmp(e1->check_type()->get_string(), "Bool") != 0)
+    if(strcmp(e1->check_type(env)->get_string(), "Bool") != 0)
     {
         serror.print_error(get_line_number(), "negation used with a non bool");
         type = idtable.add_string("Object");
@@ -450,10 +450,10 @@ void lt_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-Symbol lt_class::check_type()
+Symbol lt_class::check_type(const Environment &env)
 {
-    std::string type1 = e1->check_type()->get_string();
-    std::string type2 = e2->check_type()->get_string();
+    std::string type1 = e1->check_type(env)->get_string();
+    std::string type2 = e2->check_type(env)->get_string();
     
     bool ok = true;
     if(type1 != "Int")
@@ -491,10 +491,10 @@ void eq_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-Symbol eq_class::check_type()
+Symbol eq_class::check_type(const Environment &env)
 {
-    std::string type1 = e1->check_type()->get_string();
-    std::string type2 = e2->check_type()->get_string();
+    std::string type1 = e1->check_type(env)->get_string();
+    std::string type2 = e2->check_type(env)->get_string();
     //being optimistic here
     type = idtable.add_string("Bool");
 
@@ -528,10 +528,10 @@ void leq_class::dump(ostream& stream, int n)
    e2->dump(stream, n+2);
 }
 
-Symbol leq_class::check_type()
+Symbol leq_class::check_type(const Environment &env)
 {
-    std::string type1 = e1->check_type()->get_string();
-    std::string type2 = e2->check_type()->get_string();
+    std::string type1 = e1->check_type(env)->get_string();
+    std::string type2 = e2->check_type(env)->get_string();
     
     bool ok = true;
     if(type1 != "Int")
@@ -560,9 +560,9 @@ Expression comp_class::copy_Expression()
    return new comp_class(e1->copy_Expression());
 }
 
-Symbol comp_class::check_type()
+Symbol comp_class::check_type(const Environment &env)
 {
-    if(strcmp(e1->check_type()->get_string(), "Bool") != 0)
+    if(strcmp(e1->check_type(env)->get_string(), "Bool") != 0)
     {
         serror.print_error(get_line_number(), " \"Not\" used with a non bool");
         type = idtable.add_string("Object");
@@ -593,7 +593,7 @@ void int_const_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, token);
 }
 
-Symbol int_const_class::check_type()
+Symbol int_const_class::check_type(const Environment &env)
 {
     type = idtable.add_string("Int");
     return type;
@@ -611,7 +611,7 @@ void bool_const_class::dump(ostream& stream, int n)
    dump_Boolean(stream, n+2, val);
 }
 
-Symbol bool_const_class::check_type()
+Symbol bool_const_class::check_type(const Environment &env)
 {
     type = idtable.add_string("Bool");
     return type;
@@ -623,7 +623,7 @@ Expression string_const_class::copy_Expression()
    return new string_const_class(copy_Symbol(token));
 }
 
-Symbol string_const_class::check_type()
+Symbol string_const_class::check_type(const Environment &env)
 {
     type = idtable.add_string("String");
     return type;
@@ -662,9 +662,9 @@ void isvoid_class::dump(ostream& stream, int n)
    e1->dump(stream, n+2);
 }
 
-Symbol isvoid_class::check_type()
+Symbol isvoid_class::check_type(const Environment &env)
 {
-    e1->check_type();
+    e1->check_type(env);
     
     type = idtable.add_string("Bool");
     return type;
@@ -675,7 +675,7 @@ Expression no_expr_class::copy_Expression()
    return new no_expr_class();
 }
 
-Symbol no_expr_class::check_type()
+Symbol no_expr_class::check_type(const Environment &env)
 {
     type = idtable.add_string("No_type");
     return type;
@@ -702,20 +702,20 @@ void object_class::dump(ostream& stream, int n)
 
 
 
-Symbol Feature_class::check_type()
+Symbol Feature_class::check_type(const Environment &env)
 {
     attr_class *att = dynamic_cast<attr_class*>(this);
     
     if(att)
     {
-        return att->check_type();
+        return att->check_type(env);
     }
     else
     {
         method_class *meth = dynamic_cast<method_class*>(this);
         if(meth) 
         {
-            return meth->check_type();
+            return meth->check_type(env);
         }
     }
     return idtable.add_string("_no_type");
