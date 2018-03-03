@@ -246,9 +246,6 @@ void program_class::semant()
 
     /* ClassTable constructor may do some semantic analysis */
     ClassTable *classtable = new ClassTable(classes);
-   
-    std::vector <std::string> ast_tex;
-    std::string str;
     InheritanceGraph inheri_g;
     inheri_g.add_edge("Object", "Int");
     inheri_g.add_edge("Object", "String");
