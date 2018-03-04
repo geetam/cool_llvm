@@ -17,5 +17,6 @@ public:
     bool cycle_exists() const;
     Symbol join_of_types(const Symbol type1, const Symbol type2) const;
     void dump_edges() const;
+    std::vector <Symbol> pre_order() const;
 };
 #endif

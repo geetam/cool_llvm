@@ -9,6 +9,7 @@
 #include <vector>
 #include "environment.h"
 #include "semanterror.h"
+#include <algorithm>
 
 extern int semant_debug;
 extern char *curr_filename;
@@ -240,6 +241,8 @@ ostream& ClassTable::semant_error()
      errors. Part 2) can be done in a second stage, when you want
      to build mycoolc.
  */
+
+
 void program_class::semant()
 {
     initialize_constants();
@@ -247,14 +250,17 @@ void program_class::semant()
     /* ClassTable constructor may do some semantic analysis */
     ClassTable *classtable = new ClassTable(classes);
     Environment env;
-    Symbol object_s = idtable.add_string("Object"),
-           int_s = idtable.add_string("Int"),
-           bool_s = idtable.add_string("Bool"),
-           string_s = idtable.add_string("String");
-           
-    env.igraph.add_edge(object_s, int_s);
-    env.igraph.add_edge(object_s, string_s);
-    env.igraph.add_edge(object_s, bool_s);
+    
+    env.igraph.add_edge(Object, Int);
+    env.igraph.add_edge(Object, Str);
+    env.igraph.add_edge(Object, Bool);
+    
+    std::map <Symbol, class__class*> class_pointer_map;
+    for(int i = classes->first(); classes->more(i); i = classes->next(i))
+    {
+        class__class *cls = reinterpret_cast<class__class*>( classes->nth(i));
+        class_pointer_map[cls->getName()] = cls;
+    }
     
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
@@ -263,19 +269,29 @@ void program_class::semant()
         Symbol par = reinterpret_cast<class__class*>( classes->nth(i))->getParent();
         env.igraph.add_edge(par, chi);
     }
+    
     bool cycle_check = env.igraph.cycle_exists();
     if(cycle_check) {
-        std::cout << "nope";
         serror.print_error(get_line_number(), "The program has cyclic inheritance");
         exit(1);
     }
-    for(int i = classes->first(); classes->more(i); i = classes->next(i))
+    
+    std::vector <Symbol> pre_order = env.igraph.pre_order_filtered();
+    
+    //these needn't be checked for semantic errors
+    pre_order.erase(std::remove(pre_order.begin(), pre_order.end(), idtable.add_string("Object")), pre_order.end());
+    pre_order.erase(std::remove(pre_order.begin(), pre_order.end(), idtable.add_string("IO")), pre_order.end());
+    pre_order.erase(std::remove(pre_order.begin(), pre_order.end(), idtable.add_string("Int")), pre_order.end());
+    pre_order.erase(std::remove(pre_order.begin(), pre_order.end(), idtable.add_string("String")), pre_order.end());
+    pre_order.erase(std::remove(pre_order.begin(), pre_order.end(), idtable.add_string("Bool")), pre_order.end());
+    
+    for(auto it = pre_order.begin(); it != pre_order.end(); it++)
     {
-        curr_filename = classes->nth(i)->get_filename()->get_string();
-        env.current_class = reinterpret_cast<class__class*>( classes->nth(i))->getName();
-        classes->nth(i)->check_type(env);
+        curr_filename = class_pointer_map[*it]->get_filename()->get_string();
+        env.current_class = class_pointer_map[*it]->getName();
+        class_pointer_map[*it]->check_type(env);
     }
-    /* some semantic analysis code may go here */
+
     if (serror.get_num_errors()) {
         cerr << "Compilation halted due to static semantic errors." << endl;
         exit(1);

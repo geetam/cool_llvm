@@ -2,6 +2,8 @@
 #include <iostream>
 #include <assert.h>
 #include "stringtab.h"
+#include <stack>
+#include <algorithm>
 
 void InheritanceGraph::add_edge(const Symbol v1, const Symbol v2)
 {
@@ -102,3 +104,29 @@ void InheritanceGraph::dump_edges() const
         }
     }
 }
+
+std::vector<Symbol> InheritanceGraph::pre_order() const
+{
+    
+    std::vector <Symbol> ret;
+    std::stack <Symbol> st;
+    st.push(idtable.add_string("Object"));
+    
+    while(!st.empty())
+    {
+        Symbol top = st.top();
+        ret.push_back(top);
+        st.pop();
+        try 
+        {
+            for(auto li_it = adj_li.at(top).rbegin(); li_it != adj_li.at(top).rend(); li_it++)
+            {
+                st.push(*li_it);
+            }
+        } catch(std::out_of_range e) {continue;}
+    }
+    
+    
+    return ret;
+}
+
