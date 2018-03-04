@@ -276,7 +276,7 @@ void program_class::semant()
         exit(1);
     }
     
-    std::vector <Symbol> pre_order = env.igraph.pre_order_filtered();
+    std::vector <Symbol> pre_order = env.igraph.pre_order();
     
     //these needn't be checked for semantic errors
     pre_order.erase(std::remove(pre_order.begin(), pre_order.end(), idtable.add_string("Object")), pre_order.end());
