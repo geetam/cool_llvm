@@ -240,6 +240,78 @@ ostream& ClassTable::semant_error()
      errors. Part 2) can be done in a second stage, when you want
      to build mycoolc.
  */
+
+
+
+class__class* make_object_class()
+{
+    return static_cast<class__class*>(
+        class_(Object,
+               No_class,
+               append_Features(
+                   append_Features(
+                       single_Features(method(cool_abort, nil_Formals(), Object, no_expr())),
+                       single_Features(method(type_name, nil_Formals(), Str, no_expr()))),
+                   single_Features(method(copy, nil_Formals(), SELF_TYPE, no_expr()))),
+               stringtable.add_string("<basic class>")));
+}
+
+class__class* make_IO_class()
+{
+    return static_cast<class__class*>(
+        class_(IO,
+               Object,
+               append_Features(
+                   append_Features(
+                       append_Features(
+                           single_Features(method(out_string, single_Formals(formal(arg, Str)),
+                                           SELF_TYPE, no_expr())),
+                           single_Features(method(out_int, single_Formals(formal(arg, Int)),
+                                           SELF_TYPE, no_expr()))),
+                       single_Features(method(in_string, nil_Formals(), Str, no_expr()))),
+                   single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
+               stringtable.add_string("<basic class>")));
+
+}
+class__class* make_Int_class()
+{
+    return static_cast<class__class*>(
+        class_(Int,
+               Object,
+               single_Features(attr(val, prim_slot, no_expr())),
+               stringtable.add_string("<basic class>")));
+}
+
+class__class* make_Bool_class()
+{
+    return static_cast<class__class*>(
+        class_(Bool, Object, single_Features(attr(val, prim_slot, no_expr())),stringtable.add_string("<basic class>")));
+}
+
+class__class* make_Str_class()
+{
+    return static_cast<class__class*>(
+        class_(Str,
+               Object,
+               append_Features(
+                   append_Features(
+                       append_Features(
+                           append_Features(
+                               single_Features(attr(val, Int, no_expr())),
+                               single_Features(attr(str_field, prim_slot, no_expr()))),
+                           single_Features(method(length, nil_Formals(), Int, no_expr()))),
+                       single_Features(method(concat,
+                                       single_Formals(formal(arg, Str)),
+                                       Str,
+                                       no_expr()))),
+                   single_Features(method(substr,
+                                          append_Formals(single_Formals(formal(arg, Int)),
+                                                  single_Formals(formal(arg2, Int))),
+                                          Str,
+                                          no_expr()))),
+               stringtable.add_string("<basic class>")));
+}
+
 void program_class::semant()
 {
     initialize_constants();
@@ -269,6 +341,59 @@ void program_class::semant()
         serror.print_error(get_line_number(), "The program has cyclic inheritance");
         exit(1);
     }
+    
+    
+    for(int i = classes->first(); classes->more(i); i = classes->next(i))
+    {
+        class__class* cls = reinterpret_cast<class__class*>( classes->nth(i));
+        env.classname_symtab_map[cls->getName()] = cls->gen_class_symtab();
+    }
+    
+
+    
+    class__class *ObjectClass = make_object_class(),
+                 *StrClass = make_Str_class(),
+                 *IOClass = make_IO_class(),
+                 *IntClass = make_Int_class(),
+                 *BoolClass = make_Bool_class();
+                  
+    env.classname_symtab_map[Object] = ObjectClass->gen_class_symtab();
+    env.classname_symtab_map[Str] = StrClass->gen_class_symtab();
+    env.classname_symtab_map[IO] = IOClass->gen_class_symtab();
+    env.classname_symtab_map[Int] = IntClass->gen_class_symtab();
+    env.classname_symtab_map[Bool] = BoolClass->gen_class_symtab();
+    
+    
+    for(int i = classes->first(); classes->more(i); i = classes->next(i))
+    {
+        class__class* cls = reinterpret_cast<class__class*>( classes->nth(i));
+        if(env.classname_symtab_map.count(cls->getParent()) == 0)
+        {
+            std::string errmsg = "class \"" + std::string(cls->getParent()->get_string()) +
+                                 "\" not declared, hence, inheritance not possible";
+            serror.print_error(get_line_number(), errmsg);
+        }
+        else
+        {
+            class_symbols par_syms = env.classname_symtab_map.find(cls->getParent())->second;
+            env.classname_symtab_map[cls->getName()].append_entries(par_syms.get_entries());
+        }
+    }
+    
+//     for(int i = classes->first(); classes->more(i); i = classes->next(i))
+//     {
+//         class__class* cls = reinterpret_cast<class__class*>( classes->nth(i));
+//         class_symbols clssym = env.classname_symtab_map[cls->getName()];
+//         std::list < std::pair <Symbol, SymEntryData> > l = clssym.get_entries();
+//         std::cout << "printing entries of class " << cls->getName() << "\n";
+//         for(auto it = l.begin(); it!= l.end(); it++)
+//         {
+//             std::cout << it->first->get_string()  << "\n";
+//         }
+//     }
+    
+
+    
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         curr_filename = classes->nth(i)->get_filename()->get_string();
