@@ -44,10 +44,45 @@ void class__class::dump(ostream& stream, int n)
 
 Symbol class__class::check_type(const Environment &env)
 {
-        for(int i = features->first(); features->more(i); i++)
+    class_symbols clssym = env.classname_symtab_map.find(name)->second;
+    std::list < pair_sym_entry> entries = clssym.get_entries();
+    Environment env_mod = env;
+    env_mod.symbol_table.enterscope();
+    for(auto it = entries.begin(); it != entries.end(); it++)
+    {
+        env_mod.symbol_table.addid(it->first, new SymEntryData(it->second));
+    }
+    
+    
+    for(int i = features->first(); features->more(i); i++)
+    {
+        features->nth(i)->check_type(env_mod);
+    }
+    env_mod.symbol_table.exitscope();
+}
+
+class_symbols class__class::gen_class_symtab()
+{
+    class_symbols ret;
+    for(int i = features->first(); features->more(i); i++)
+    {
+        attr_class *att = dynamic_cast <attr_class*>(features->nth(i));
+        method_class *meth = dynamic_cast <method_class*>(features->nth(i));
+        
+        if(att)
         {
-            features->nth(i)->check_type(env);
+            SymEntryData dat(att->getTypeDec(), true, false);
+            ret.add_entry(att->getName(), dat);
         }
+        else if(meth)
+        {
+            SymEntryData dat(meth->getRetTypeDec(), false, true);
+            ret.add_entry(meth->getName(), dat);
+        }
+        
+    }
+    
+    return ret;
 }
 
 Feature method_class::copy_Feature()
@@ -82,14 +117,28 @@ void attr_class::dump(ostream& stream, int n)
 
 Symbol attr_class::check_type(const Environment &env)
 {
-    if(dynamic_cast<no_expr_class*>(init) == nullptr)
+    no_expr_class *no_expr_ptr = dynamic_cast<no_expr_class*>(init);
+    if(no_expr_ptr == nullptr) //init is NOT no_expr
     {
-        Symbol type_init = init->check_type(env);
-//         if(env.igraph.join_of_types(type_init, type_decl) == type_decl) //type_init conforms to type_decl
-//         {
-//             
-//         }
-    } else { //expr assigned is no_expr
+        Environment env_mod = env;
+        env_mod.symbol_table.addid(idtable.add_string("self"), new SymEntryData(env.current_class, true, false));
+        env_mod.symbol_table.addid(name, new SymEntryData(type_decl, true, false));
+        
+        Symbol type_init = init->check_type(env_mod);
+        if(env.igraph.join_of_types(type_init, type_decl) != type_decl) //type_init does not conform to type_decl
+        {
+            std::string errmsg = "attribute of type \"" + std::string(type_decl->get_string()) + "\" " + 
+                                 "cannot be assigned an expression of type \"" + std::string(type_init->get_string()) + "\" ";
+            serror.print_error(get_line_number(), errmsg);
+            type = idtable.add_string("Object");
+        }
+        else
+        {
+            type = type_decl;
+        }
+    }
+    else //init is no_expr
+    { 
         type = type_decl;
     }
     
@@ -704,6 +753,23 @@ void object_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, name);
 }
 
+Symbol object_class::check_type(const Environment& env)
+{
+    Environment env_copy = env; //symbol table implementation requires improvement, lookup should be const
+    SymEntryData *dat = env_copy.symbol_table.lookup(name);
+    if(dat == nullptr)
+    {
+        std::string errmsg = "object \"" + std::string(name->get_string()) + "\" not declared";
+        serror.print_error(get_line_number(), errmsg);
+        type = idtable.add_string("Object");
+    }
+    else
+    {
+        type = dat->get_typedec();
+    }
+    
+    return type;
+}
 
 
 Symbol Feature_class::check_type(const Environment &env)

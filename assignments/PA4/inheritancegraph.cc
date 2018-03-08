@@ -68,13 +68,14 @@ Symbol InheritanceGraph::join_of_types (const Symbol type1, const Symbol type2 )
     
     Symbol str = type1;
     color_map[str] = 'b';
-    transpose.at(str);
-    while(transpose.at(str).size() == 1)
-    {
-        
-        str = *transpose.at(str).begin();
-        color_map[str] = 'b';
-    }
+    try {
+        while(transpose.at(str).size() == 1)
+        {
+
+            str = *transpose.at(str).begin();
+            color_map[str] = 'b';
+        }
+    } catch(std::out_of_range e) {}
     assert(color_map[idtable.add_string("Object")] == 'b');
     
     if(color_map[type2] == 'b') {

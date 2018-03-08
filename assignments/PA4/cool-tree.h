@@ -171,7 +171,7 @@ public:
    }
    
    Symbol check_type(const Environment &env) override;
-
+    class_symbols gen_class_symtab();
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
@@ -198,7 +198,8 @@ public:
    }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
-
+    Symbol getName() { return name; }
+    Symbol getRetTypeDec() { return return_type; }
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -224,6 +225,9 @@ public:
    Feature copy_Feature();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment &env) override;
+    
+    Symbol getName() { return name; }
+    Symbol getTypeDec() { return type_decl; }
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -789,7 +793,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
+    Symbol check_type(const Environment & env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

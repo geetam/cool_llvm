@@ -8,7 +8,8 @@
 class Environment {
 public:
     InheritanceGraph igraph;
-    SymbolTable <Symbol, Symbol> symbol_table;
+    symtab_sym_dat symbol_table;
+    std::map <Symbol, class_symbols> classname_symtab_map;
     Symbol current_class;
 };
 

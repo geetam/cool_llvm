@@ -15,7 +15,7 @@
 #define _SYMTAB_H_
 
 #include "list.h"
-
+#include <list>
 //
 // SymtabEnty<SYM,DAT> defines the entry for a symbol table that associates
 //    symbols of type `SYM' with data of type `DAT *'.  
@@ -163,8 +163,54 @@ public:
          }
       }
    }
+   
  
 };
 
+class SymEntryData {
+private:
+    Symbol typedec;
+    bool obj;
+    bool meth;
+public:
+    SymEntryData(Symbol t, bool isobj, bool ismeth)
+    {
+        typedec = t;
+        obj = isobj;
+        meth = ismeth;
+    }
+    
+    Symbol get_typedec() { return typedec; }
+    bool is_obj() { return obj; }
+    bool is_meth() { return meth; }
+    void set_obj() { obj = true; meth = false;}
+    void set_meth() { meth = true; obj = false;}
+    void set_typedec(Symbol t) { typedec = t; }
+    
+};
+
+typedef std::pair < Symbol, SymEntryData> pair_sym_entry;
+class class_symbols {
+    
+private:
+    std::list < pair_sym_entry > entries;
+public:
+    std::list < pair_sym_entry > get_entries() 
+    { 
+        return entries;
+        
+    }
+    void add_entry(const Symbol s, const SymEntryData &entry_data)
+    {
+        entries.push_back( std::make_pair(s, entry_data) );
+    }
+    
+    void append_entries(std::list <pair_sym_entry> li)
+    {
+        entries.splice(entries.end(), li);
+    }
+};
+
+typedef SymbolTable <Symbol, SymEntryData> symtab_sym_dat;
 #endif
 
