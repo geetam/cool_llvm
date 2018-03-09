@@ -346,7 +346,10 @@ void program_class::semant()
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         class__class* cls = reinterpret_cast<class__class*>( classes->nth(i));
-        env.classname_symtab_map[cls->getName()] = cls->gen_class_symtab();
+        std::pair <class_atts, class_methods> class_symbols = cls->gen_class_symtab();
+        env.classname_atts_map[cls->getName()] = class_symbols.first;
+        env.classname_methods_map[cls->getName()] = class_symbols.second;
+        
     }
     
 
@@ -356,18 +359,21 @@ void program_class::semant()
                  *IOClass = make_IO_class(),
                  *IntClass = make_Int_class(),
                  *BoolClass = make_Bool_class();
-                  
-    env.classname_symtab_map[Object] = ObjectClass->gen_class_symtab();
-    env.classname_symtab_map[Str] = StrClass->gen_class_symtab();
-    env.classname_symtab_map[IO] = IOClass->gen_class_symtab();
-    env.classname_symtab_map[Int] = IntClass->gen_class_symtab();
-    env.classname_symtab_map[Bool] = BoolClass->gen_class_symtab();
+    
+    std::vector <class__class*> basic_classes = { ObjectClass, StrClass, IOClass, IntClass, BoolClass };
+    
+    for(class__class *cls : basic_classes)
+    {
+        std::pair <class_atts, class_methods> class_symbols = cls->gen_class_symtab();
+        env.classname_atts_map[cls->getName()] = class_symbols.first;
+        env.classname_methods_map[cls->getName()] = class_symbols.second;
+    }
     
     
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         class__class* cls = reinterpret_cast<class__class*>( classes->nth(i));
-        if(env.classname_symtab_map.count(cls->getParent()) == 0)
+        if(env.classname_atts_map.count(cls->getParent()) == 0) //just checking atts_map is enough
         {
             std::string errmsg = "class \"" + std::string(cls->getParent()->get_string()) +
                                  "\" not declared, hence, inheritance not possible";
@@ -375,8 +381,11 @@ void program_class::semant()
         }
         else
         {
-            class_symbols par_syms = env.classname_symtab_map.find(cls->getParent())->second;
-            env.classname_symtab_map[cls->getName()].append_entries(par_syms.get_entries());
+            class_atts par_atts = env.classname_atts_map.find(cls->getParent())->second;
+            env.classname_atts_map[cls->getName()].append_entries(par_atts.get_entries());
+            
+            class_methods par_meths = env.classname_methods_map.find(cls->getParent())->second;
+            env.classname_methods_map[cls->getName()].append_entries(par_meths.get_entries());
         }
     }
     

@@ -44,8 +44,8 @@ void class__class::dump(ostream& stream, int n)
 
 Symbol class__class::check_type(const Environment &env)
 {
-    class_symbols clssym = env.classname_symtab_map.find(name)->second;
-    std::list < pair_sym_entry> entries = clssym.get_entries();
+    class_atts clssym = env.classname_atts_map.find(name)->second;
+    std::list < pair_att_entry> entries = clssym.get_entries();
     Environment env_mod = env;
     env_mod.symbol_table.enterscope();
     for(auto it = entries.begin(); it != entries.end(); it++)
@@ -61,9 +61,10 @@ Symbol class__class::check_type(const Environment &env)
     env_mod.symbol_table.exitscope();
 }
 
-class_symbols class__class::gen_class_symtab()
+std::pair <class_atts, class_methods> class__class::gen_class_symtab()
 {
-    class_symbols ret;
+    class_atts ret_att;
+    class_methods ret_meth;
     for(int i = features->first(); features->more(i); i++)
     {
         attr_class *att = dynamic_cast <attr_class*>(features->nth(i));
@@ -71,18 +72,28 @@ class_symbols class__class::gen_class_symtab()
         
         if(att)
         {
-            SymEntryData dat(att->getTypeDec(), true, false);
-            ret.add_entry(att->getName(), dat);
+            SymEntryData dat(att->getTypeDec());
+            ret_att.add_entry(att->getName(), dat);
         }
         else if(meth)
         {
-            SymEntryData dat(meth->getRetTypeDec(), false, true);
-            ret.add_entry(meth->getName(), dat);
+            type_vec typs;
+            Formals formals = meth->getFormals();
+            for(int i = formals->first(); formals->more(i); i = formals->next(i))
+            {
+                formal_class *fp = static_cast <formal_class*> (formals->nth(i));
+                typs.push_back(fp->getTypeDec());
+            }
+            
+            typs.push_back(meth->getRetTypeDec());
+             
+            ret_meth.add_entry(meth->getName(), typs);
+            
         }
         
     }
     
-    return ret;
+    return std::make_pair(ret_att, ret_meth);
 }
 
 Feature method_class::copy_Feature()
@@ -121,8 +132,8 @@ Symbol attr_class::check_type(const Environment &env)
     if(no_expr_ptr == nullptr) //init is NOT no_expr
     {
         Environment env_mod = env;
-        env_mod.symbol_table.addid(idtable.add_string("self"), new SymEntryData(env.current_class, true, false));
-        env_mod.symbol_table.addid(name, new SymEntryData(type_decl, true, false));
+        env_mod.symbol_table.addid(idtable.add_string("self"), new SymEntryData(env.current_class));
+        env_mod.symbol_table.addid(name, new SymEntryData(type_decl));
         
         Symbol type_init = init->check_type(env_mod);
         if(env.igraph.join_of_types(type_init, type_decl) != type_decl) //type_init does not conform to type_decl

@@ -171,7 +171,7 @@ public:
    }
    
    Symbol check_type(const Environment &env) override;
-    class_symbols gen_class_symtab();
+    std::pair <class_atts, class_methods> gen_class_symtab();
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
@@ -200,6 +200,7 @@ public:
    void dump(ostream& stream, int n);
     Symbol getName() { return name; }
     Symbol getRetTypeDec() { return return_type; }
+    Formals getFormals() { return formals; }
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -249,7 +250,7 @@ public:
    }
    Formal copy_Formal();
    void dump(ostream& stream, int n);
-
+    Symbol getTypeDec() { return type_decl; }
 #ifdef Formal_SHARED_EXTRAS
    Formal_SHARED_EXTRAS
 #endif

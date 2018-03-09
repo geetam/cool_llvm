@@ -16,6 +16,7 @@
 
 #include "list.h"
 #include <list>
+#include <vector>
 //
 // SymtabEnty<SYM,DAT> defines the entry for a symbol table that associates
 //    symbols of type `SYM' with data of type `DAT *'.  
@@ -170,42 +171,57 @@ public:
 class SymEntryData {
 private:
     Symbol typedec;
-    bool obj;
-    bool meth;
+
 public:
-    SymEntryData(Symbol t, bool isobj, bool ismeth)
+    SymEntryData(Symbol t)
     {
         typedec = t;
-        obj = isobj;
-        meth = ismeth;
     }
     
     Symbol get_typedec() { return typedec; }
-    bool is_obj() { return obj; }
-    bool is_meth() { return meth; }
-    void set_obj() { obj = true; meth = false;}
-    void set_meth() { meth = true; obj = false;}
     void set_typedec(Symbol t) { typedec = t; }
     
 };
 
-typedef std::pair < Symbol, SymEntryData> pair_sym_entry;
-class class_symbols {
+typedef std::pair < Symbol, SymEntryData> pair_att_entry;
+class class_atts {
     
 private:
-    std::list < pair_sym_entry > entries;
+    std::list < pair_att_entry > entries;
 public:
-    std::list < pair_sym_entry > get_entries() 
+    std::list < pair_att_entry > get_entries() 
     { 
         return entries;
-        
     }
     void add_entry(const Symbol s, const SymEntryData &entry_data)
     {
         entries.push_back( std::make_pair(s, entry_data) );
     }
     
-    void append_entries(std::list <pair_sym_entry> li)
+    void append_entries(std::list <pair_att_entry> li)
+    {
+        entries.splice(entries.end(), li);
+    }
+};
+
+typedef std::vector <Symbol> type_vec;
+typedef std::pair <Symbol, type_vec> pair_meth_entry;
+
+class class_methods {
+    
+private:
+    std::list <pair_meth_entry> entries;
+public:
+    std::list < pair_meth_entry > get_entries() 
+    { 
+        return entries;
+    }
+    void add_entry(const Symbol s, const type_vec &sig)
+    {
+        entries.push_back( std::make_pair(s, sig) );
+    }
+    
+    void append_entries(std::list <pair_meth_entry> li)
     {
         entries.splice(entries.end(), li);
     }
