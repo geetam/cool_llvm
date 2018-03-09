@@ -111,6 +111,12 @@ void method_class::dump(ostream& stream, int n)
    expr->dump(stream, n+2);
 }
 
+Symbol method_class::check_type(const Environment& env)
+{
+    //TODO: actually type check
+    return return_type;
+}
+
 
 Feature attr_class::copy_Feature()
 {
@@ -229,6 +235,71 @@ void dispatch_class::dump(ostream& stream, int n)
    expr->dump(stream, n+2);
    dump_Symbol(stream, n+2, name);
    actual->dump(stream, n+2);
+}
+
+Symbol dispatch_class::check_type(const Environment& env)
+{
+    Environment env_copy = env;
+    Symbol class_of_meth = expr->check_type(env);
+    auto key = std::make_pair(class_of_meth, name);
+    
+    if(env_copy.get_method_env().count(key) == 0)
+    {
+        std::string errmsg = "No function with name \"" + std::string(name->get_string())
+                            + "\" declared in class \"" + std::string(class_of_meth->get_string()) + "\"";
+        serror.print_error(get_line_number(), errmsg);
+        type = idtable.add_string("Object");
+    }
+    else
+    {
+        type_vec actual_typs;
+        actual_typs.push_back(class_of_meth);
+        for(int i = actual->first(); actual->more(i); actual->next(i))
+        {
+            actual_typs.push_back(actual->nth(i)->check_type(env));
+        }
+        
+        type_vec method_signature = env_copy.get_method_env().find(key)->second;
+        if(method_signature.size() != actual_typs.size())
+        {
+            std::string errmsg =  "method \"" + std::string(name->get_string())+ "\" expected " + std::to_string(method_signature.size() -1)
+                                +  " arguments but " + std::to_string(actual_typs.size() - 1) + " were supplied";
+            serror.print_error(get_line_number(), errmsg);
+            type = idtable.add_string("Object");
+        }
+        else
+        {
+            int n = actual_typs.size();
+            bool ok = true;
+            for(int i = 1; i < n; i++)
+            {
+                if(env.igraph.join_of_types(actual_typs[i], method_signature[i]) == method_signature[i])
+                {
+                    continue;
+                }
+                else 
+                {
+                    std::string errmsg = "Supplied argument at position " + std::to_string(i+1)+"\""
+                                        + std::string(actual_typs[i]->get_string()) + "\" does not conform to"
+                                        + "required type \"" + std::string(method_signature[i]->get_string())
+                                        + "\"";
+                    serror.print_error(get_line_number(), errmsg);
+                    type = idtable.add_string("Object");
+                    ok = false;
+                }
+            }
+            
+            if(ok)
+            {
+                Symbol rettype = *(method_signature.end() - 1);
+                type = rettype == idtable.add_string("SELF_TYPE") ? *(actual_typs.begin()) : rettype;
+            }
+        }
+        
+        
+    }
+    
+    return type;
 }
 
 

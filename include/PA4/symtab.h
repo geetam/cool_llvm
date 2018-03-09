@@ -17,6 +17,7 @@
 #include "list.h"
 #include <list>
 #include <vector>
+#include "stringtab.h"
 //
 // SymtabEnty<SYM,DAT> defines the entry for a symbol table that associates
 //    symbols of type `SYM' with data of type `DAT *'.  
@@ -224,6 +225,14 @@ public:
     void append_entries(std::list <pair_meth_entry> li)
     {
         entries.splice(entries.end(), li);
+    }
+    
+    void dump()
+    {
+        for(auto entry: entries)
+        {
+            std::cout << entry.first << "\n";
+        }
     }
 };
 

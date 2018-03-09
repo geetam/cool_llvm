@@ -201,6 +201,7 @@ public:
     Symbol getName() { return name; }
     Symbol getRetTypeDec() { return return_type; }
     Formals getFormals() { return formals; }
+    Symbol check_type(const Environment & env) override;
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -346,7 +347,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
+    Symbol check_type(const Environment & env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

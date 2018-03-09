@@ -349,7 +349,6 @@ void program_class::semant()
         std::pair <class_atts, class_methods> class_symbols = cls->gen_class_symtab();
         env.classname_atts_map[cls->getName()] = class_symbols.first;
         env.classname_methods_map[cls->getName()] = class_symbols.second;
-        
     }
     
 
@@ -402,7 +401,7 @@ void program_class::semant()
 //     }
     
 
-    
+    env.get_method_env();
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         curr_filename = classes->nth(i)->get_filename()->get_string();
