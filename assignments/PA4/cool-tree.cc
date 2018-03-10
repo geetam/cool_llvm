@@ -113,8 +113,27 @@ void method_class::dump(ostream& stream, int n)
 
 Symbol method_class::check_type(const Environment& env)
 {
-    //TODO: actually type check
-    return return_type;
+    Environment env_mod = env;
+    
+    env_mod.symbol_table.addid(idtable.add_string("self"), new SymEntryData(env_mod.current_class));
+    for(int i = formals->first(); formals->more(i); formals->next(i))
+    {
+        formal_class *formal = static_cast <formal_class*>(formals->nth(i));
+        env_mod.symbol_table.addid(formal->getName(), new SymEntryData(formal->getTypeDec()));
+    }
+    
+    Symbol type_expr = expr->check_type(env_mod);
+    Symbol actual_return_type = return_type == idtable.add_string("SELF_TYPE") ? env_mod.current_class : return_type;
+    
+    if(env_mod.igraph.join_of_types(type_expr, actual_return_type) != actual_return_type)
+    {
+        std::string errmsg = "in method: \"" + std::string(name->get_string())
+                           + "\" expression's type \"" + std::string(type_expr->get_string()) 
+                           + "\" does not conform to the return type \""
+                           + std::string(actual_return_type->get_string()) + "\"";
+        serror.print_error(get_line_number(), errmsg);
+    }
+    return actual_return_type;
 }
 
 
