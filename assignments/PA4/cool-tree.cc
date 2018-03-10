@@ -416,6 +416,21 @@ void cond_class::dump(ostream& stream, int n)
    else_exp->dump(stream, n+2);
 }
 
+Symbol cond_class::check_type(const Environment& env)
+{
+    Symbol pred_type = pred->check_type(env);
+    if(pred_type != idtable.add_string("Bool"))
+    {
+        serror.print_error(get_line_number(), "Predicate expression must be of type Bool");
+    }
+    Symbol then_type = then_exp->check_type(env);
+    Symbol else_type = else_exp->check_type(env);
+    
+    type = env.igraph.join_of_types(then_type, else_type);
+    return type;
+    
+}
+
 
 Expression loop_class::copy_Expression()
 {
