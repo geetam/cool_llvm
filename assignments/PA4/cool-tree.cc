@@ -472,6 +472,14 @@ void block_class::dump(ostream& stream, int n)
    body->dump(stream, n+2);
 }
 
+Symbol block_class::check_type(const Environment& env)
+{
+    for(int i = body->first(); body->more(i); i = body->next(i))
+    {
+        type = body->nth(i)->check_type(env);
+    }
+    return type;
+}
 
 Expression let_class::copy_Expression()
 {
