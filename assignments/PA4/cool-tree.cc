@@ -50,7 +50,10 @@ Symbol class__class::check_type(const Environment &env)
     env_mod.symbol_table.enterscope();
     for(auto it = entries.begin(); it != entries.end(); it++)
     {
-        env_mod.symbol_table.addid(it->first, new SymEntryData(it->second));
+        Symbol name_att = it->first;
+        Symbol type_att = it->second.get_typedec();
+        Symbol actual_type_att = type_att == idtable.add_string("SELF_TYPE") ? name : type_att;
+        env_mod.symbol_table.addid(name_att, new SymEntryData(actual_type_att));
     }
     
     
@@ -157,20 +160,21 @@ Symbol attr_class::check_type(const Environment &env)
     if(no_expr_ptr == nullptr) //init is NOT no_expr
     {
         Environment env_mod = env;
+        Symbol actual_type = type_decl == idtable.add_string("SELF_TYPE") ? env.current_class : type_decl;
         env_mod.symbol_table.addid(idtable.add_string("self"), new SymEntryData(env.current_class));
-        env_mod.symbol_table.addid(name, new SymEntryData(type_decl));
+        env_mod.symbol_table.addid(name, new SymEntryData(actual_type));
         
         Symbol type_init = init->check_type(env_mod);
-        if(env.igraph.join_of_types(type_init, type_decl) != type_decl) //type_init does not conform to type_decl
+        if(env.igraph.join_of_types(type_init, actual_type) != actual_type) //type_init does not conform to actual_type
         {
-            std::string errmsg = "attribute of type \"" + std::string(type_decl->get_string()) + "\" " + 
+            std::string errmsg = "attribute of type \"" + std::string(actual_type->get_string()) + "\" " + 
                                  "cannot be assigned an expression of type \"" + std::string(type_init->get_string()) + "\" ";
             serror.print_error(get_line_number(), errmsg);
             type = idtable.add_string("Object");
         }
         else
         {
-            type = type_decl;
+            type = actual_type;
         }
     }
     else //init is no_expr
