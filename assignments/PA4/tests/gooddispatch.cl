@@ -2,6 +2,8 @@ class Foo inherits Bar {
     x : Int <- a();
     y : Far;
     z : Int <- y.c();
+    p : SELF_TYPE;
+    q : Int <- p.a();
 };
 
 class Bar {

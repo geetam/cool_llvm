@@ -241,6 +241,7 @@ Symbol dispatch_class::check_type(const Environment& env)
 {
     Environment env_copy = env;
     Symbol class_of_meth = expr->check_type(env);
+    class_of_meth = class_of_meth == idtable.add_string("SELF_TYPE") ? env.current_class : class_of_meth;
     auto key = std::make_pair(class_of_meth, name);
     
     if(env_copy.get_method_env().count(key) == 0)
