@@ -445,6 +445,18 @@ void loop_class::dump(ostream& stream, int n)
    body->dump(stream, n+2);
 }
 
+Symbol loop_class::check_type(const Environment& env)
+{
+    Symbol pred_type = pred->check_type(env);
+    if(pred_type != idtable.add_string("Bool"))
+    {
+        serror.print_error(get_line_number(), "Predicate of a loop must be of type Bool");
+    }
+    body->check_type(env);
+    type = idtable.add_string("Object");
+    return type;
+}
+
 
 Expression typcase_class::copy_Expression()
 {
