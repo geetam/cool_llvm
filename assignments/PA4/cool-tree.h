@@ -251,6 +251,7 @@ public:
    }
    Formal copy_Formal();
    void dump(ostream& stream, int n);
+    Symbol getName() { return name; }
     Symbol getTypeDec() { return type_decl; }
 #ifdef Formal_SHARED_EXTRAS
    Formal_SHARED_EXTRAS
@@ -737,7 +738,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
+    Symbol check_type(const Environment & env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

@@ -808,6 +808,12 @@ void new__class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, type_name);
 }
 
+Symbol new__class::check_type(const Environment& env)
+{
+    type = type_name == idtable.add_string("SELF_TYPE") ? env.current_class : type_name;
+    return type;
+}
+
 
 Expression isvoid_class::copy_Expression()
 {
