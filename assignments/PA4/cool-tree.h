@@ -268,6 +268,7 @@ protected:
    Symbol name;
    Symbol type_decl;
    Expression expr;
+   Symbol type;
 public:
    branch_class(Symbol a1, Symbol a2, Expression a3) {
       name = a1;
@@ -276,7 +277,9 @@ public:
    }
    Case copy_Case();
    void dump(ostream& stream, int n);
-
+    Symbol check_type(const Environment & env) override;
+    Symbol getTypeDec() { return type_decl; }
+    Symbol getName() { return name; }
 #ifdef Case_SHARED_EXTRAS
    Case_SHARED_EXTRAS
 #endif
@@ -417,7 +420,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
+    Symbol check_type(const Environment & env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

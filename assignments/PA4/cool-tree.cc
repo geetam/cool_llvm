@@ -11,6 +11,7 @@
 #include "cool-tree.handcode.h"
 #include "cool-tree.h"
 #include "semanterror.h"
+#include <algorithm>
 
 extern SemantError serror;
 // constructors' functions
@@ -213,6 +214,12 @@ void branch_class::dump(ostream& stream, int n)
    dump_Symbol(stream, n+2, name);
    dump_Symbol(stream, n+2, type_decl);
    expr->dump(stream, n+2);
+}
+
+Symbol branch_class::check_type(const Environment& env)
+{
+    type = expr->check_type(env);
+    return type;
 }
 
 
@@ -469,6 +476,37 @@ void typcase_class::dump(ostream& stream, int n)
    stream << pad(n) << "typcase\n";
    expr->dump(stream, n+2);
    cases->dump(stream, n+2);
+}
+
+Symbol typcase_class::check_type(const Environment& env)
+{
+    expr->check_type(env);
+    type_vec expr_types;
+    type_vec decl_types;
+    for(int i = cases->first(); cases->more(i); i = cases->next(i))
+    {
+        Environment env_mod = env;
+        env_mod.symbol_table.enterscope();
+        branch_class *branch_p = static_cast <branch_class*>(cases->nth(i));
+        env_mod.symbol_table.addid(branch_p->getName(), new SymEntryData(branch_p->getTypeDec()));
+        expr_types.push_back(branch_p->check_type(env_mod));
+        decl_types.push_back(branch_p->getTypeDec());
+        env_mod.symbol_table.exitscope();
+    }
+    auto it = std::unique(decl_types.begin(), decl_types.end());
+    if(it != decl_types.end())
+    {
+        serror.print_error(get_line_number(), "No two branches may have same declared type");
+    }
+
+    Symbol ret = expr_types[0];
+    for(Symbol etyp : expr_types)
+    {
+        ret = env.igraph.join_of_types(ret, etyp);
+    }
+    type = ret;
+    return type;
+    
 }
 
 
