@@ -546,6 +546,25 @@ void let_class::dump(ostream& stream, int n)
    body->dump(stream, n+2);
 }
 
+Symbol let_class::check_type(const Environment& env)
+{
+    Symbol init_type = init->check_type(env);
+    Symbol actual_type_decl = type_decl == idtable.add_string("SELF_TYPE") ? env.current_class : type_decl;
+    if(init_type != idtable.add_string("No_type"))
+    {
+        if(env.igraph.join_of_types(init_type, actual_type_decl) != actual_type_decl)
+        {
+            serror.print_error(get_line_number(), "let: type of init expr does not conform to the declared type");
+        }
+    }
+    Environment env_mod = env;
+    env_mod.symbol_table.enterscope();
+    env_mod.symbol_table.addid(identifier, new SymEntryData(actual_type_decl));
+    
+    type = body->check_type(env_mod);
+    env_mod.symbol_table.exitscope();
+    return type;
+}
 
 Expression plus_class::copy_Expression()
 {

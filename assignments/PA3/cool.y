@@ -145,6 +145,8 @@
     %type <feature> attribute
     %type <feature> let_feature
     %type <features> let_feature_list
+    %type <case_> branch
+    %type <cases> branch_list
     /* Precedence declarations go here. */
     
     
@@ -244,8 +246,21 @@
                 ;
                 
     formal : OBJECTID ':' TYPEID { $$ = formal($1, $3); }
-    
-    
+            ;
+            
+    branch : OBJECTID ':' TYPEID DARROW expr {
+                $$ = branch($1, $3, $5);
+                };
+            
+    branch_list: branch {
+                    $$ = single_Cases($1);
+                }
+                |
+                branch branch_list {
+                    $$ = append_Cases(single_Cases($1), $2);
+                }
+                ;
+
     expr:   OBJECTID ASSIGN expr { $$ = assign($1, $3);}
         |   expr '[' '@' TYPEID ']' '.' OBJECTID '(' ')' {
                 $$ = static_dispatch($1, $4, $7, nil_Expressions());
@@ -281,6 +296,7 @@
         |   OBJECTID    {$$ = object($1);}
         |   STR_CONST   {$$ = string_const($1);}
         |   INT_CONST   {$$ = int_const($1);}
+        |   CASE expr OF branch_list ESAC {$$ = typcase($2, $4);}
         ;
     
     
