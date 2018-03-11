@@ -46,7 +46,12 @@ bool InheritanceGraph::dfs_visit(const Symbol v, std::map <Symbol, char> &color_
         }
         else if(color_map[*it] == 'w')
         {
-            return dfs_visit(*it, color_map);
+            bool ret = dfs_visit(*it, color_map);
+            if(ret)
+            {
+                return true;
+            }
+            //else continue
         }
     }
     
