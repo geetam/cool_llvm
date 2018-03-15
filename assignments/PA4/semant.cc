@@ -57,7 +57,6 @@ static void initialize_constants(void)
     arg         = idtable.add_string("arg");
     arg2        = idtable.add_string("arg2");
     Bool        = idtable.add_string("Bool");
-    concat      = idtable.add_string("concat");
     cool_abort  = idtable.add_string("abort");
     copy        = idtable.add_string("copy");
     Int         = idtable.add_string("Int");
@@ -181,7 +180,7 @@ void ClassTable::install_basic_classes() {
 									       single_Features(attr(val, Int, no_expr())),
 									       single_Features(attr(str_field, prim_slot, no_expr()))),
 							       single_Features(method(length, nil_Formals(), Int, no_expr()))),
-					       single_Features(method(concat, 
+					       single_Features(method(idtable.add_string("concat"), 
 								      single_Formals(formal(arg, Str)),
 								      Str, 
 								      no_expr()))),
@@ -300,7 +299,7 @@ class__class* make_Str_class()
                                single_Features(attr(val, Int, no_expr())),
                                single_Features(attr(str_field, prim_slot, no_expr()))),
                            single_Features(method(length, nil_Formals(), Int, no_expr()))),
-                       single_Features(method(concat,
+                       single_Features(method(idtable.add_string("concat"),
                                        single_Formals(formal(arg, Str)),
                                        Str,
                                        no_expr()))),

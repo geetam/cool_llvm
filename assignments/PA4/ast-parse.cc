@@ -131,7 +131,6 @@
 #define MUL 274
 #define DIVIDE 275
 #define NEG 276
-#define LT 277
 #define EQ 278
 #define LEQ 279
 #define COMP 280
@@ -145,7 +144,7 @@
 #define NO_TYPE 288
 #define STR_CONST 289
 #define INT_CONST 290
-#define ID 291
+
 #define LINENO 292
 
 
