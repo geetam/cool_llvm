@@ -8,7 +8,18 @@
 //
 //////////////////////////////////////////////////////////
 
-
+#include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/TypeBuilder.h"
+#include "llvm/IR/Verifier.h"
 #include "tree.h"
 #include "cool-tree.handcode.h"
 #include "environment.h"
@@ -135,7 +146,8 @@ public:
    }
    Program copy_Program();
    void dump(ostream& stream, int n);
-
+    void init_codegen();
+    llvm::Value * codegen() override;
 #ifdef Program_SHARED_EXTRAS
    Program_SHARED_EXTRAS
 #endif
@@ -171,6 +183,7 @@ public:
    }
    
    Symbol check_type(const Environment &env) override;
+    llvm::Value * codegen() override;
     std::pair <class_atts, class_methods> gen_class_symtab();
 
 #ifdef Class__SHARED_EXTRAS
@@ -202,6 +215,7 @@ public:
     Symbol getRetTypeDec() { return return_type; }
     Formals getFormals() { return formals; }
     Symbol check_type(const Environment & env) override;
+    llvm::Value* codegen() override;
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -488,6 +502,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+    llvm::Value* codegen() override;
     Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -682,6 +697,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment &env) override;
+    llvm::Value* codegen() override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

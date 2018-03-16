@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "cool-tree.h"
 #include "semanterror.h"
+#include <llvm/Support/raw_os_ostream.h>
+#include "llvm/IR/Module.h"
 
 extern Program ast_root;      // root of the abstract syntax tree
 FILE *ast_file = stdin;       // we read the AST from standard input
@@ -16,6 +18,9 @@ int main(int argc, char *argv[]) {
   handle_flags(argc,argv);
   ast_yyparse();
   ast_root->semant();
-  ast_root->dump_with_types(cout,0);
+  program_class *ast_root_p = static_cast<program_class*>(ast_root);
+  ast_root_p->init_codegen();
+  ast_root_p->codegen();
+  //ast_root->dump_with_types(cout,0);
 }
 
