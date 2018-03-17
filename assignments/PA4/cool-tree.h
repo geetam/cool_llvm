@@ -147,7 +147,7 @@ public:
    Program copy_Program();
    void dump(ostream& stream, int n);
     void init_codegen();
-    llvm::Value * codegen() override;
+    llvm::Value * codegen(const Symbol_to_Alloca&) override;
 #ifdef Program_SHARED_EXTRAS
    Program_SHARED_EXTRAS
 #endif
@@ -183,7 +183,8 @@ public:
    }
    
    Symbol check_type(const Environment &env) override;
-    llvm::Value * codegen() override;
+    llvm::Value * codegen(const Symbol_to_Alloca&) override;
+    llvm::StructType* get_llvm_type();
     std::pair <class_atts, class_methods> gen_class_symtab();
 
 #ifdef Class__SHARED_EXTRAS
@@ -215,7 +216,7 @@ public:
     Symbol getRetTypeDec() { return return_type; }
     Formals getFormals() { return formals; }
     Symbol check_type(const Environment & env) override;
-    llvm::Value* codegen() override;
+    llvm::Value* codegen(const Symbol_to_Alloca&) override;
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -502,7 +503,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    llvm::Value* codegen() override;
+    llvm::Value* codegen(const Symbol_to_Alloca&) override;
     Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -697,7 +698,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment &env) override;
-    llvm::Value* codegen() override;
+    llvm::Value* codegen(const Symbol_to_Alloca& location_var);
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -817,6 +818,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment & env) override;
+    llvm::Value * codegen(const Symbol_to_Alloca & ) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

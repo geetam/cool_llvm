@@ -18,6 +18,24 @@
 #include "stringtab.h"
 #include "cool-io.h"
 #include "environment.h"
+
+
+#include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/TypeBuilder.h"
+#include "llvm/IR/Verifier.h"
+
+#include "symtab.h"
+
+typedef SymbolTable <Symbol, llvm::AllocaInst> Symbol_to_Alloca;
 /////////////////////////////////////////////////////////////////////
 //
 //  tree_node
@@ -57,6 +75,7 @@ public:
     virtual tree_node *copy() = 0;
     virtual ~tree_node() { }
     virtual Symbol check_type(const Environment &env) { return idtable.add_string("Object"); } 
+    virtual llvm::Value* codegen(const Symbol_to_Alloca &) {};
     virtual void dump(ostream& stream, int n) = 0;
     int get_line_number();
     tree_node *set(tree_node *);
