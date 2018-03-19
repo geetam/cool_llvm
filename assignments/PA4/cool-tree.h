@@ -193,7 +193,7 @@ protected:
    Symbol parent;
    Features features;
    Symbol filename;
-   std::vector <Symbol> attr_llvm;
+   std::vector <attr_class*> attr_llvm;
    bool attr_llvm_set;
    void set_attr_llvm();
 public:

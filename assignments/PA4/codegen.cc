@@ -202,16 +202,18 @@ llvm::Value* dispatch_class::codegen(const Symbol_to_Addr &location_var)
 
 void class__class::set_attr_llvm()
 {
-    for(int i = features->first(); features->more(i); i = features->next(i))
+    if(!attr_llvm_set)
     {
-        attr_class *attr = dynamic_cast <attr_class*> (features->nth(i));
-        if(attr)
+        for(int i = features->first(); features->more(i); i = features->next(i))
         {
-            attr_llvm.push_back(attr->getName());
+            attr_class *attr = dynamic_cast <attr_class*> (features->nth(i));
+            if(attr)
+            {
+                attr_llvm.push_back(attr);
+            }
         }
+        attr_llvm_set = true;
     }
-    
-    attr_llvm_set = true;
 }
 
 std::pair <bool, Symbol> class__class::attr_at_index(int idx)
@@ -224,7 +226,7 @@ std::pair <bool, Symbol> class__class::attr_at_index(int idx)
     Symbol ret;
     try
     {
-        ret = attr_llvm[idx];
+        ret = attr_llvm[idx]->getName();
     }
     catch(std::out_of_range e)
     {
@@ -259,4 +261,10 @@ llvm::Value* program_class::genIOCode()
 
     return llvm_ir_builder.CreateRet(ret);
 
+}
+
+void class__class::gen_constructor(llvm::Type* cls_type)
+{
+    llvm::AllocaInst *loc = llvm_ir_builder.CreateAlloca(cls_type);
+    set_attr_llvm();
 }
