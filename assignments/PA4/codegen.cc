@@ -193,7 +193,9 @@ llvm::Value* dispatch_class::codegen(const Symbol_to_Addr &location_var)
         {
             params.push_back(actual->codegen(location_var));
         }
-        return llvm_ir_builder.CreateCall(llvm_func, params, name->get_string());
+        std::string class_name = obj->getType()->get_string();
+        std::string func_name = class_name + '_' + std::string(name->get_string());
+        return llvm_ir_builder.CreateCall(llvm_func, params, func_name);
     }
     
 }
