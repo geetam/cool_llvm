@@ -95,10 +95,14 @@ llvm::Value* method_class::codegen(const Symbol_to_Addr &location_var, class__cl
         llvm_params.push_back(cool_to_llvm_type(formalptr->getTypeDec()));
     }
     
-    
+    std::string func_name = std::string(cls->getName()->get_string()) + '_' + std::string(name->get_string());
+    if(func_name == "Main_main")
+    {
+        func_name = "main";
+    }
     llvm::FunctionType* llvm_func_type = llvm::FunctionType::get(llvm_return_type, llvm_params, false);
     llvm::Function *llvm_func = llvm::Function::Create(llvm_func_type, llvm::Function::ExternalLinkage,
-                                                       name->get_string(), llvm_module);
+                                                       func_name, llvm_module);
 
 
     llvm::BasicBlock *bablk = llvm::BasicBlock::Create(llvm_context, "", llvm_func);
