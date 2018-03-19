@@ -148,6 +148,7 @@ public:
    void dump(ostream& stream, int n);
     void init_codegen();
     llvm::Value * codegen(const Symbol_to_Addr&) override;
+    static llvm::Value* genIOCode();
 #ifdef Program_SHARED_EXTRAS
    Program_SHARED_EXTRAS
 #endif

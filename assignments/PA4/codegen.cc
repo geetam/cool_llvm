@@ -54,6 +54,8 @@ void program_class::init_codegen()
         class__class* cls = static_cast<class__class*>(classes->nth(i));
         cool_to_llvm_typemap[cls->getName()] = cls->get_llvm_type();
     }
+    
+    genIOCode();
 }
 
 llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
@@ -191,7 +193,7 @@ llvm::Value* dispatch_class::codegen(const Symbol_to_Addr &location_var)
         {
             params.push_back(actual->codegen(location_var));
         }
-        llvm_ir_builder.CreateCall(llvm_func, params, name->get_string());
+        return llvm_ir_builder.CreateCall(llvm_func, params, name->get_string());
     }
     
 }
@@ -230,4 +232,29 @@ std::pair <bool, Symbol> class__class::attr_at_index(int idx)
     
     return std::make_pair(valid, ret);
     
+}
+
+llvm::Value* program_class::genIOCode()
+{
+    std::vector <llvm::Type*> char_ptr(1, llvm::Type::getInt8PtrTy(llvm_context));
+    llvm::FunctionType *out_string_type = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), char_ptr, false);
+    llvm::Function *out_string_func = llvm::Function::Create(out_string_type, llvm::Function::ExternalLinkage, "out_string", llvm_module);
+    
+    llvm::FunctionType *printftype = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), char_ptr, true);
+    llvm::BasicBlock *BB = llvm::BasicBlock::Create(llvm_context, "entry", out_string_func);
+    
+    llvm_ir_builder.SetInsertPoint(BB);
+    llvm::Value *fmt =
+        llvm_ir_builder.CreateGlobalStringPtr("The sum is: %s\n");
+    
+
+    llvm::Value *out_string_ptr = llvm_module->getOrInsertFunction("out_string", out_string_type);
+    llvm::Value *printf_ptr = llvm_module->getOrInsertFunction("printf", printftype);
+
+    std::vector <llvm::Value *> Args;
+    Args.push_back(out_string_func->args().begin());
+    llvm::Value *ret = llvm_ir_builder.CreateCall(printf_ptr, Args, "calltmp");
+
+    return llvm_ir_builder.CreateRet(ret);
+
 }
