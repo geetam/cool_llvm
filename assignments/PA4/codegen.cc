@@ -32,6 +32,8 @@ llvm::Type* cool_to_llvm_type(const Symbol coolty)
 
 llvm::StructType* class__class::get_llvm_type()
 {
+    if(llvm_type_set)
+        return llvm_type;
     std::vector <llvm::Type*> tyvec;
     for(int i = features->first(); features->more(i); i = features->next(i))
     {
@@ -43,6 +45,7 @@ llvm::StructType* class__class::get_llvm_type()
     }
     std::string name_of_type = "class." + std::string(name->get_string());
     llvm::StructType *structReg = llvm::StructType::create(llvm_context,tyvec, name_of_type);
+    llvm_type_set = true;
     return structReg;
 }
 
@@ -65,7 +68,7 @@ llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
        class__class* cls = static_cast<class__class*>(classes->nth(i));
-       cls->gen_constructor(cls->get_llvm_type());
+       cls->gen_constructor();
        cls->codegen(location_var);
     }
     
@@ -264,14 +267,14 @@ llvm::Value* program_class::genIOCode()
 
 }
 
-void class__class::gen_constructor(llvm::StructType* cls_type)
+void class__class::gen_constructor()
 {
+    llvm::StructType* cls_type = get_llvm_type();
     std::string class_name = name->get_string();
     std::string func_name = class_name + '_' + class_name;
     llvm::FunctionType* llvm_func_type = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm_context), false);
     llvm::Function *llvm_func = llvm::Function::Create(llvm_func_type, llvm::Function::ExternalLinkage,
                                                        func_name, llvm_module);
-
 
     llvm::BasicBlock *bablk = llvm::BasicBlock::Create(llvm_context, "", llvm_func);
     llvm_ir_builder.SetInsertPoint(bablk);

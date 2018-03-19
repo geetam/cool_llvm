@@ -195,7 +195,9 @@ protected:
    Features features;
    Symbol filename;
    std::vector <attr_class*> attr_llvm;
+   llvm::StructType* llvm_type;
    bool attr_llvm_set;
+   bool llvm_type_set;
    void set_attr_llvm();
 public:
    class__class(Symbol a1, Symbol a2, Features a3, Symbol a4) {
@@ -204,6 +206,7 @@ public:
       features = a3;
       filename = a4;
       attr_llvm_set = false;
+      llvm_type_set = false;
     }
    
    Class_ copy_Class_() override;
@@ -222,7 +225,7 @@ public:
     llvm::StructType* get_llvm_type();
     std::pair <class_atts, class_methods> gen_class_symtab();
     std::pair <bool, Symbol> attr_at_index(int idx);
-    void gen_constructor(llvm::StructType*);
+    void gen_constructor();
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
 #endif
