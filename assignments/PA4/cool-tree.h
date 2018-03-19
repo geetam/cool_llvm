@@ -176,6 +176,7 @@ public:
     
     Symbol getName() { return name; }
     Symbol getTypeDec() { return type_decl; }
+    Expression getInit() { return init; }
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -221,8 +222,7 @@ public:
     llvm::StructType* get_llvm_type();
     std::pair <class_atts, class_methods> gen_class_symtab();
     std::pair <bool, Symbol> attr_at_index(int idx);
-    void gen_constructor(llvm::Type*);
-    
+    void gen_constructor(llvm::StructType*);
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
 #endif

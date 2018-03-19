@@ -65,6 +65,7 @@ llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
        class__class* cls = static_cast<class__class*>(classes->nth(i));
+       cls->gen_constructor(cls->get_llvm_type());
        cls->codegen(location_var);
     }
     
@@ -117,10 +118,11 @@ llvm::Value* method_class::codegen(const Symbol_to_Addr &location_var, class__cl
     }
     
     Symbol_to_Addr mod_location_var = location_var;
+    mod_location_var.enterscope();
     llvm::StructType *struct_type = static_cast<llvm::StructType*> (class_type);
     int num_attrs_class = struct_type->getNumElements();
     auto class_attrs_ptr = llvm_ir_builder.CreateLoad(llvm_func->args().begin(), "");
-
+    
     for(int i = 0; i < num_attrs_class; i++)
     {
         std::vector<llvm::Value*> indices(2);
@@ -132,7 +134,6 @@ llvm::Value* method_class::codegen(const Symbol_to_Addr &location_var, class__cl
         auto attr = cls->attr_at_index(i);
         if(attr.first)
         {
-            mod_location_var.enterscope();
             mod_location_var.addid(attr.second, attr_ptr);
         }
         else
@@ -263,8 +264,42 @@ llvm::Value* program_class::genIOCode()
 
 }
 
-void class__class::gen_constructor(llvm::Type* cls_type)
+void class__class::gen_constructor(llvm::StructType* cls_type)
 {
+    std::string class_name = name->get_string();
+    std::string func_name = class_name + '_' + class_name;
+    llvm::FunctionType* llvm_func_type = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm_context), false);
+    llvm::Function *llvm_func = llvm::Function::Create(llvm_func_type, llvm::Function::ExternalLinkage,
+                                                       func_name, llvm_module);
+
+
+    llvm::BasicBlock *bablk = llvm::BasicBlock::Create(llvm_context, "", llvm_func);
+    llvm_ir_builder.SetInsertPoint(bablk);
+    
     llvm::AllocaInst *loc = llvm_ir_builder.CreateAlloca(cls_type);
     set_attr_llvm();
+    int num_attrs_class = cls_type->getNumElements();
+    auto class_attrs_ptr = llvm_ir_builder.CreateLoad(loc, "");
+    Symbol_to_Addr location_var;
+    location_var.enterscope();
+    for(int i = 0; i < num_attrs_class; i++)
+    {
+        std::vector<llvm::Value*> indices(2);
+        auto zero_int = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, true));
+        indices[0] = zero_int;
+        indices[1] = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, i, true));
+        llvm::Value* attr_ptr = llvm_ir_builder.CreateGEP(cls_type, loc, indices, "memberptr");
+        location_var.addid(attr_llvm[i]->getName(), attr_ptr);
+    }
+    for(int i = 0; i < num_attrs_class; i++)
+    {
+        no_expr_class* init_no_expr = dynamic_cast <no_expr_class*> (attr_llvm[i]->getInit());
+        if(init_no_expr == nullptr)
+        {
+            llvm::Value* expr_code = attr_llvm[i]->getInit()->codegen(location_var);
+            llvm_ir_builder.CreateStore(expr_code, location_var.lookup(attr_llvm[i]->getName()));
+        }
+   
+    }
+    llvm_ir_builder.CreateRet(nullptr);
 }
