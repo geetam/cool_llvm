@@ -157,6 +157,34 @@ public:
 #endif
 };
 
+// define constructor - attr
+class attr_class : public Feature_class {
+protected:
+   Symbol name;
+   Symbol type_decl;
+   Symbol type;
+   Expression init;
+public:
+   attr_class(Symbol a1, Symbol a2, Expression a3) {
+      name = a1;
+      type_decl = a2;
+      init = a3;
+   }
+   Feature copy_Feature();
+   void dump(ostream& stream, int n);
+    Symbol check_type(const Environment &env) override;
+    
+    Symbol getName() { return name; }
+    Symbol getTypeDec() { return type_decl; }
+#ifdef Feature_SHARED_EXTRAS
+   Feature_SHARED_EXTRAS
+#endif
+#ifdef attr_EXTRAS
+   attr_EXTRAS
+#endif
+};
+
+
 
 // define constructor - class_
 class class__class : public Class__class {
@@ -193,7 +221,8 @@ public:
     llvm::StructType* get_llvm_type();
     std::pair <class_atts, class_methods> gen_class_symtab();
     std::pair <bool, Symbol> attr_at_index(int idx);
-
+    void gen_constructor(llvm::Type*);
+    
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
 #endif
@@ -231,35 +260,6 @@ public:
    method_EXTRAS
 #endif
 };
-
-
-// define constructor - attr
-class attr_class : public Feature_class {
-protected:
-   Symbol name;
-   Symbol type_decl;
-   Symbol type;
-   Expression init;
-public:
-   attr_class(Symbol a1, Symbol a2, Expression a3) {
-      name = a1;
-      type_decl = a2;
-      init = a3;
-   }
-   Feature copy_Feature();
-   void dump(ostream& stream, int n);
-    Symbol check_type(const Environment &env) override;
-    
-    Symbol getName() { return name; }
-    Symbol getTypeDec() { return type_decl; }
-#ifdef Feature_SHARED_EXTRAS
-   Feature_SHARED_EXTRAS
-#endif
-#ifdef attr_EXTRAS
-   attr_EXTRAS
-#endif
-};
-
 
 // define constructor - formal
 class formal_class : public Formal_class {
