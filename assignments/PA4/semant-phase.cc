@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
   ast_root->semant();
   program_class *ast_root_p = static_cast<program_class*>(ast_root);
   ast_root_p->init_codegen();
-  Symbol_to_Alloca location_var;
+  Symbol_to_Addr location_var;
   ast_root_p->codegen(location_var);
   //ast_root->dump_with_types(cout,0);
 }

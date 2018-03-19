@@ -147,7 +147,7 @@ public:
    Program copy_Program();
    void dump(ostream& stream, int n);
     void init_codegen();
-    llvm::Value * codegen(const Symbol_to_Alloca&) override;
+    llvm::Value * codegen(const Symbol_to_Addr&) override;
 #ifdef Program_SHARED_EXTRAS
    Program_SHARED_EXTRAS
 #endif
@@ -164,13 +164,18 @@ protected:
    Symbol parent;
    Features features;
    Symbol filename;
+   std::vector <Symbol> attr_llvm;
+   bool attr_llvm_set;
+   void set_attr_llvm();
 public:
    class__class(Symbol a1, Symbol a2, Features a3, Symbol a4) {
       name = a1;
       parent = a2;
       features = a3;
       filename = a4;
-   }
+      attr_llvm_set = false;
+    }
+   
    Class_ copy_Class_() override;
    void dump(ostream& stream, int n);
     
@@ -183,9 +188,10 @@ public:
    }
    
    Symbol check_type(const Environment &env) override;
-    llvm::Value * codegen(const Symbol_to_Alloca&) override;
+    llvm::Value * codegen(const Symbol_to_Addr&) override;
     llvm::StructType* get_llvm_type();
     std::pair <class_atts, class_methods> gen_class_symtab();
+    std::pair <bool, Symbol> attr_at_index(int idx);
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
@@ -216,7 +222,7 @@ public:
     Symbol getRetTypeDec() { return return_type; }
     Formals getFormals() { return formals; }
     Symbol check_type(const Environment & env) override;
-    llvm::Value* codegen(const Symbol_to_Alloca&) override;
+    llvm::Value* codegen(const Symbol_to_Addr&, class__class*);
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -367,6 +373,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment & env) override;
+    
+    llvm::Value * codegen(const Symbol_to_Addr & ) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -503,7 +511,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-    llvm::Value* codegen(const Symbol_to_Alloca&) override;
+    llvm::Value* codegen(const Symbol_to_Addr&) override;
     Symbol check_type(const Environment &env) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -698,7 +706,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment &env) override;
-    llvm::Value* codegen(const Symbol_to_Alloca& location_var);
+    llvm::Value* codegen(const Symbol_to_Addr& location_var);
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -818,7 +826,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment & env) override;
-    llvm::Value * codegen(const Symbol_to_Alloca & ) override;
+    llvm::Value * codegen(const Symbol_to_Addr & ) override;
+    Symbol getName() {return name;}
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

@@ -56,7 +56,7 @@ void program_class::init_codegen()
     }
 }
 
-llvm::Value* program_class::codegen(const Symbol_to_Alloca &location_var)
+llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
 {
     
     llvm::raw_os_ostream cout_raw_os { std::cout };
@@ -70,22 +70,25 @@ llvm::Value* program_class::codegen(const Symbol_to_Alloca &location_var)
     
 }
 
-llvm::Value* class__class::codegen(const Symbol_to_Alloca &location_var)
+llvm::Value* class__class::codegen(const Symbol_to_Addr &location_var)
 {
+    
     for(int i = features->first(); features->more(i); i = features->next(i))
     {
         method_class *meth = dynamic_cast <method_class*> (features->nth(i));
         if(meth)
         {
-            meth->codegen(location_var);
+            meth->codegen(location_var, this);
         }
     }
 }
 
-llvm::Value* method_class::codegen(const Symbol_to_Alloca &location_var)
+llvm::Value* method_class::codegen(const Symbol_to_Addr &location_var, class__class *cls)
 {
     llvm::Type* llvm_return_type = cool_to_llvm_type(return_type);
     std::vector <llvm::Type*> llvm_params;
+    auto class_type = cool_to_llvm_type(cls->getName());
+    llvm_params.push_back(llvm::PointerType::get(class_type, 0));
     for(int i = formals->first(); formals->more(i); i = formals->next(i))
     {
         formal_class* formalptr = static_cast <formal_class*>(formals->nth(i));
@@ -96,12 +99,44 @@ llvm::Value* method_class::codegen(const Symbol_to_Alloca &location_var)
     llvm::FunctionType* llvm_func_type = llvm::FunctionType::get(llvm_return_type, llvm_params, false);
     llvm::Function *llvm_func = llvm::Function::Create(llvm_func_type, llvm::Function::ExternalLinkage,
                                                        name->get_string(), llvm_module);
-    
+
 
     llvm::BasicBlock *bablk = llvm::BasicBlock::Create(llvm_context, "", llvm_func);
-    
     llvm_ir_builder.SetInsertPoint(bablk);
-    llvm::Value* expr_code = expr->codegen(location_var);
+    
+    for (auto &arg : llvm_func->args())
+    {
+        llvm::AllocaInst *Alloca = llvm_ir_builder.CreateAlloca(arg.getType(), 0, arg.getName());
+        llvm_ir_builder.CreateStore(&arg, Alloca);
+    }
+    
+    Symbol_to_Addr mod_location_var = location_var;
+    llvm::StructType *struct_type = static_cast<llvm::StructType*> (class_type);
+    int num_attrs_class = struct_type->getNumElements();
+    auto class_attrs_ptr = llvm_ir_builder.CreateLoad(llvm_func->args().begin(), "");
+
+    for(int i = 0; i < num_attrs_class; i++)
+    {
+        std::vector<llvm::Value*> indices(2);
+        auto zero_int = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, true));
+        indices[0] = zero_int;
+        indices[1] = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, i, true));
+        llvm::Value* attr_ptr = llvm_ir_builder.CreateGEP(class_attrs_ptr->getType(), llvm_func->args().begin(), indices, "memberptr");
+        //auto loaded_member = llvm_ir_builder.CreateLoad(attr_ptr, "loadtmp");
+        auto attr = cls->attr_at_index(i);
+        if(attr.first)
+        {
+            mod_location_var.enterscope();
+            mod_location_var.addid(attr.second, attr_ptr);
+        }
+        else
+        {
+            std:cerr << "No such att\n";
+        }
+        
+    }
+    
+    llvm::Value* expr_code = expr->codegen(mod_location_var);
     if(expr_code)
     {
         return llvm_ir_builder.CreateRet(expr_code);
@@ -114,7 +149,7 @@ llvm::Value* method_class::codegen(const Symbol_to_Alloca &location_var)
     
 }
 
-llvm::Value* plus_class::codegen(const Symbol_to_Alloca &location_var)
+llvm::Value* plus_class::codegen(const Symbol_to_Addr &location_var)
 {
     llvm::Value* left_val = e1->codegen(location_var);
     llvm::Value* right_val = e2->codegen(location_var);
@@ -123,14 +158,72 @@ llvm::Value* plus_class::codegen(const Symbol_to_Alloca &location_var)
     return sum;
 }
 
-llvm::Value* int_const_class::codegen(const Symbol_to_Alloca &location_var)
+llvm::Value* int_const_class::codegen(const Symbol_to_Addr &location_var)
 {
     return llvm::ConstantInt::get(llvm_context, llvm::APInt(32, atoi(token->get_string()) , true));
 }
 
-llvm::Value* object_class::codegen(const Symbol_to_Alloca &location_var)
+llvm::Value* object_class::codegen(const Symbol_to_Addr &location_var)
 {
-    Symbol_to_Alloca tab = location_var;
-    llvm::AllocaInst* loc = tab.lookup(name);
+    Symbol_to_Addr tab = location_var;
+    llvm::Value* loc = tab.lookup(name);
     return llvm_ir_builder.CreateLoad(loc);
+}
+
+llvm::Value* dispatch_class::codegen(const Symbol_to_Addr &location_var)
+{
+    Symbol_to_Addr tab = location_var;
+    std::string name_s = name->get_string();
+    llvm::Function *llvm_func = llvm_module->getFunction(name_s);
+    object_class* obj = dynamic_cast <object_class*>(expr);
+    
+    if(obj)
+    {
+        std::vector <llvm::Value*> params;
+        llvm::Value* loc = tab.lookup(obj->getName());
+        llvm::Value *val = llvm_ir_builder.CreateLoad(loc);
+        params.push_back(val);
+        for(int i = actual->first(); actual->more(i); i = actual->next(i))
+        {
+            params.push_back(actual->codegen(location_var));
+        }
+        llvm_ir_builder.CreateCall(llvm_func, params, name->get_string());
+    }
+    
+}
+
+void class__class::set_attr_llvm()
+{
+    for(int i = features->first(); features->more(i); i = features->next(i))
+    {
+        attr_class *attr = dynamic_cast <attr_class*> (features->nth(i));
+        if(attr)
+        {
+            attr_llvm.push_back(attr->getName());
+        }
+    }
+    
+    attr_llvm_set = true;
+}
+
+std::pair <bool, Symbol> class__class::attr_at_index(int idx)
+{
+    if(!attr_llvm_set)
+    {
+        set_attr_llvm();
+    }
+    bool valid = true;
+    Symbol ret;
+    try
+    {
+        ret = attr_llvm[idx];
+    }
+    catch(std::out_of_range e)
+    {
+        ret = idtable.add_string("Not Found");
+        valid = false;
+    }
+    
+    return std::make_pair(valid, ret);
+    
 }

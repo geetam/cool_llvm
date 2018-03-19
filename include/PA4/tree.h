@@ -35,7 +35,7 @@
 
 #include "symtab.h"
 
-typedef SymbolTable <Symbol, llvm::AllocaInst> Symbol_to_Alloca;
+typedef SymbolTable <Symbol, llvm::Value> Symbol_to_Addr;
 /////////////////////////////////////////////////////////////////////
 //
 //  tree_node
@@ -75,7 +75,7 @@ public:
     virtual tree_node *copy() = 0;
     virtual ~tree_node() { }
     virtual Symbol check_type(const Environment &env) { return idtable.add_string("Object"); } 
-    virtual llvm::Value* codegen(const Symbol_to_Alloca &) {};
+    virtual llvm::Value* codegen(const Symbol_to_Addr &) {};
     virtual void dump(ostream& stream, int n) = 0;
     int get_line_number();
     tree_node *set(tree_node *);
