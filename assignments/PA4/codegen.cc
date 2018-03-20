@@ -271,19 +271,25 @@ llvm::Value* program_class::genIOCode()
 void class__class::gen_constructor()
 {
     llvm::StructType* cls_type = get_llvm_type();
+    llvm::PointerType* pointer_to_cls_type = llvm::PointerType::get(cls_type, 0);
     std::string class_name = name->get_string();
     std::string func_name = class_name + '_' + class_name;
-    llvm::FunctionType* llvm_func_type = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm_context), false);
+    std::vector <llvm::Type*> params(1, pointer_to_cls_type);
+    llvm::FunctionType* llvm_func_type = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm_context), params, false);
     llvm::Function *llvm_func = llvm::Function::Create(llvm_func_type, llvm::Function::ExternalLinkage,
                                                        func_name, llvm_module);
 
     llvm::BasicBlock *bablk = llvm::BasicBlock::Create(llvm_context, "", llvm_func);
     llvm_ir_builder.SetInsertPoint(bablk);
+    //copy the passed argument
+    llvm::AllocaInst *ptr_to_ptr = llvm_ir_builder.CreateAlloca(pointer_to_cls_type);
+    llvm::Value* ptr_to_obj = llvm_func->args().begin();
+    llvm::Value* str_of_ptr = llvm_ir_builder.CreateStore(ptr_to_obj, ptr_to_ptr);
+    llvm::Value* copied_ptr_to_obj = llvm_ir_builder.CreateLoad(pointer_to_cls_type, ptr_to_ptr);
     
-    llvm::AllocaInst *loc = llvm_ir_builder.CreateAlloca(cls_type);
+    
     set_attr_llvm();
     int num_attrs_class = cls_type->getNumElements();
-    auto class_attrs_ptr = llvm_ir_builder.CreateLoad(loc, "");
     Symbol_to_Addr location_var;
     location_var.enterscope();
     for(int i = 0; i < num_attrs_class; i++)
@@ -292,7 +298,8 @@ void class__class::gen_constructor()
         auto zero_int = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, true));
         indices[0] = zero_int;
         indices[1] = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, i, true));
-        llvm::Value* attr_ptr = llvm_ir_builder.CreateGEP(cls_type, loc, indices, "memberptr");
+        std::string name_gep = std::string(attr_llvm[i]->getName()->get_string()) + "_ptr" ;
+        llvm::Value* attr_ptr = llvm_ir_builder.CreateGEP(cls_type, copied_ptr_to_obj, indices, name_gep);
         location_var.addid(attr_llvm[i]->getName(), attr_ptr);
     }
     for(int i = 0; i < num_attrs_class; i++)
