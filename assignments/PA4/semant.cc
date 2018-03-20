@@ -311,7 +311,7 @@ class__class* make_Str_class()
                stringtable.add_string("<basic class>")));
 }
 
-void program_class::semant()
+Environment program_class::semant()
 {
     initialize_constants();
 
@@ -412,6 +412,8 @@ void program_class::semant()
         cerr << "Compilation halted due to static semantic errors." << endl;
         exit(1);
     }
+    
+    return env;
 }
 
 

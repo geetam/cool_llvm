@@ -32,7 +32,7 @@ class Program_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Program(); }
    virtual Program copy_Program() = 0;
-
+    virtual Environment semant() = 0;
 #ifdef Program_EXTRAS
    Program_EXTRAS
 #endif
@@ -146,9 +146,11 @@ public:
    }
    Program copy_Program();
    void dump(ostream& stream, int n);
-    void init_codegen();
+    void init_codegen(const Environment &semant_env);
     llvm::Value * codegen(const Symbol_to_Addr&) override;
     static llvm::Value* genIOCode();
+    static llvm::Function* gen_main();
+    Environment semant();
 #ifdef Program_SHARED_EXTRAS
    Program_SHARED_EXTRAS
 #endif

@@ -45,13 +45,13 @@ typedef list_node<Case> Cases_class;
 typedef Cases_class *Cases;
 
 #define Program_EXTRAS                          \
-virtual void semant() = 0;			\
+			\
 virtual void dump_with_types(ostream&, int) = 0; 
 
 
 
 #define program_EXTRAS                          \
-void semant();     				\
+     				\
 void dump_with_types(ostream&, int);            
 
 #define Class__EXTRAS                   \

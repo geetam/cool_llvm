@@ -18,9 +18,9 @@ void handle_flags(int argc, char *argv[]);
 int main(int argc, char *argv[]) {
   handle_flags(argc,argv);
   ast_yyparse();
-  ast_root->semant();
+  Environment semant_res = ast_root->semant();
   program_class *ast_root_p = static_cast<program_class*>(ast_root);
-  ast_root_p->init_codegen();
+  ast_root_p->init_codegen(semant_res);
   Symbol_to_Addr location_var;
   ast_root_p->codegen(location_var);
   //ast_root->dump_with_types(cout,0);
