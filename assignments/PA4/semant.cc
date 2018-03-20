@@ -318,14 +318,11 @@ Environment program_class::semant()
     /* ClassTable constructor may do some semantic analysis */
     ClassTable *classtable = new ClassTable(classes);
     Environment env;
-    Symbol object_s = idtable.add_string("Object"),
-           int_s = idtable.add_string("Int"),
-           bool_s = idtable.add_string("Bool"),
-           string_s = idtable.add_string("String");
            
-    env.igraph.add_edge(object_s, int_s);
-    env.igraph.add_edge(object_s, string_s);
-    env.igraph.add_edge(object_s, bool_s);
+    env.igraph.add_edge(Object, Int);
+    env.igraph.add_edge(Object, Str);
+    env.igraph.add_edge(Object, Bool);
+    env.igraph.add_edge(Object, IO);
     
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
