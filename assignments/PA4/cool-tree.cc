@@ -279,7 +279,7 @@ Symbol static_dispatch_class::check_type(const Environment& env)
     {
         type_vec actual_typs;
         actual_typs.push_back(class_of_meth);
-        for(int i = actual->first(); actual->more(i); actual->next(i))
+        for(int i = actual->first(); actual->more(i); i = actual->next(i))
         {
             actual_typs.push_back(actual->nth(i)->check_type(env));
         }
@@ -298,16 +298,18 @@ Symbol static_dispatch_class::check_type(const Environment& env)
             bool ok = true;
             for(int i = 1; i < n; i++)
             {
-                if(env.igraph.join_of_types(actual_typs[i], method_signature[i]) == method_signature[i])
+                Symbol method_signature_curr = method_signature[i - 1] == idtable.add_string("SELF_TYPE") ?
+                                               class_of_meth : method_signature[i - 1];
+                if(env.igraph.join_of_types(actual_typs[i], method_signature_curr) == method_signature_curr)
                 {
                     continue;
                 }
-                else 
+                else
                 {
                     std::string errmsg = "Supplied argument at position " + std::to_string(i+1)+"\""
-                                        + std::string(actual_typs[i]->get_string()) + "\" does not conform to"
-                                        + "required type \"" + std::string(method_signature[i]->get_string())
-                                        + "\"";
+                                         + std::string(actual_typs[i]->get_string()) + "\" does not conform to"
+                                         + "required type \"" + std::string(method_signature_curr->get_string())
+                                         + "\"";
                     serror.print_error(get_line_number(), errmsg);
                     type = idtable.add_string("Object");
                     ok = false;
@@ -360,7 +362,7 @@ Symbol dispatch_class::check_type(const Environment& env)
     {
         type_vec actual_typs;
         actual_typs.push_back(class_of_meth);
-        for(int i = actual->first(); actual->more(i); actual->next(i))
+        for(int i = actual->first(); actual->more(i); i = actual->next(i))
         {
             actual_typs.push_back(actual->nth(i)->check_type(env));
         }
@@ -379,7 +381,9 @@ Symbol dispatch_class::check_type(const Environment& env)
             bool ok = true;
             for(int i = 1; i < n; i++)
             {
-                if(env.igraph.join_of_types(actual_typs[i], method_signature[i]) == method_signature[i])
+                Symbol method_signature_curr = method_signature[i - 1] == idtable.add_string("SELF_TYPE") ?
+                                               class_of_meth : method_signature[i - 1];
+                if(env.igraph.join_of_types(actual_typs[i], method_signature_curr) == method_signature_curr)
                 {
                     continue;
                 }
@@ -387,7 +391,7 @@ Symbol dispatch_class::check_type(const Environment& env)
                 {
                     std::string errmsg = "Supplied argument at position " + std::to_string(i+1)+"\""
                                         + std::string(actual_typs[i]->get_string()) + "\" does not conform to"
-                                        + "required type \"" + std::string(method_signature[i]->get_string())
+                                        + "required type \"" + std::string(method_signature_curr->get_string())
                                         + "\"";
                     serror.print_error(get_line_number(), errmsg);
                     type = idtable.add_string("Object");
