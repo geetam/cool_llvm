@@ -275,7 +275,7 @@ void class__class::gen_constructor()
     llvm::Function *llvm_func = llvm::Function::Create(llvm_func_type, llvm::Function::ExternalLinkage,
                                                        func_name, llvm_module);
 
-    llvm::BasicBlock *bablk = llvm::BasicBlock::Create(llvm_context, "", llvm_func);
+    llvm::BasicBlock *bablk = llvm::BasicBlock::Create(llvm_context, "constructor_func", llvm_func);
     llvm_ir_builder.SetInsertPoint(bablk);
     //copy the passed argument
     llvm::AllocaInst *ptr_to_ptr = llvm_ir_builder.CreateAlloca(pointer_to_cls_type);
