@@ -46,7 +46,8 @@ llvm::StructType* class__class::get_llvm_type()
     std::string name_of_type = "class." + std::string(name->get_string());
     llvm::StructType *structReg = llvm::StructType::create(llvm_context,tyvec, name_of_type);
     llvm_type_set = true;
-    return structReg;
+    llvm_type = structReg;
+    return llvm_type;
 }
 
 void program_class::init_codegen()
