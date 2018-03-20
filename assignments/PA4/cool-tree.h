@@ -150,7 +150,7 @@ public:
     llvm::Value * codegen(const Symbol_to_Addr&) override;
     static llvm::Value* genIOCode();
     static llvm::Function* gen_main();
-    Environment semant();
+    Environment semant() override;
 #ifdef Program_SHARED_EXTRAS
    Program_SHARED_EXTRAS
 #endif

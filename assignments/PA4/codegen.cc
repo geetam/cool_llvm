@@ -50,16 +50,15 @@ llvm::StructType* class__class::get_llvm_type()
     return llvm_type;
 }
 
-void program_class::init_codegen()
+void program_class::init_codegen(const Environment &semant_env)
 {
+    
     llvm_module = new llvm::Module(curr_filename, llvm_context);
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
         class__class* cls = static_cast<class__class*>(classes->nth(i));
         cool_to_llvm_typemap[cls->getName()] = cls->get_llvm_type();
     }
-    
-    genIOCode();
 }
 
 llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
@@ -72,7 +71,8 @@ llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
        cls->gen_constructor();
        cls->codegen(location_var);
     }
-    
+    gen_main();
+    genIOCode();
     llvm_module->print(cout_raw_os, nullptr);
     
 }
@@ -103,10 +103,6 @@ llvm::Value* method_class::codegen(const Symbol_to_Addr &location_var, class__cl
     }
     
     std::string func_name = std::string(cls->getName()->get_string()) + '_' + std::string(name->get_string());
-    if(func_name == "Main_main")
-    {
-        func_name = "main";
-    }
     llvm::FunctionType* llvm_func_type = llvm::FunctionType::get(llvm_return_type, llvm_params, false);
     llvm::Function *llvm_func = llvm::Function::Create(llvm_func_type, llvm::Function::ExternalLinkage,
                                                        func_name, llvm_module);
@@ -310,7 +306,40 @@ void class__class::gen_constructor()
             llvm::Value* expr_code = attr_llvm[i]->getInit()->codegen(location_var);
             llvm_ir_builder.CreateStore(expr_code, location_var.lookup(attr_llvm[i]->getName()));
         }
+        //TODO: else { call constructor of att }
    
     }
     llvm_ir_builder.CreateRet(nullptr);
+}
+
+llvm::Function* program_class::gen_main()
+{
+    llvm::FunctionType *maintype = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), false);
+    llvm::Function *main_func = llvm::Function::Create(maintype, llvm::Function::ExternalLinkage, "main", llvm_module);
+    llvm::BasicBlock *main_entry = llvm::BasicBlock::Create(llvm_context, "main_entry", main_func);
+    llvm_ir_builder.SetInsertPoint(main_entry);
+    llvm::StructType* Main_type = llvm_module->getTypeByName("class.Main");
+    if(Main_type)
+    {
+        //Main_Main is the constructor, Main_main is the defined main func inside Main
+        llvm::AllocaInst* aloc = llvm_ir_builder.CreateAlloca(Main_type);
+        std::vector <llvm::Value*> Args;
+        Args.push_back ( aloc );
+        
+        llvm::Value* Main_Main = llvm_module->getFunction("Main_Main");
+        if(Main_Main)
+        {
+            llvm_ir_builder.CreateCall(Main_Main, Args);
+        }
+        //now call main() defined by programmer inside Main
+        llvm::Value *Main_main = llvm_module->getFunction("Main_main");
+        if(Main_main)
+        {
+            llvm_ir_builder.CreateCall(Main_main, Args);
+        }
+        
+        llvm_ir_builder.CreateRet(llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, true)));
+        return main_func;
+    }
+    return nullptr;
 }
