@@ -269,7 +269,22 @@ llvm::Value* program_class::genIOCode()
     Args.push_back(out_string_func->args().begin() + 1);
     llvm::Value *ret = llvm_ir_builder.CreateCall(printf_ptr, Args, "calltmp");
     llvm::Value* io_val = llvm_ir_builder.CreateLoad(out_string_func->args().begin());
-    return llvm_ir_builder.CreateRet(io_val);
+    llvm_ir_builder.CreateRet(io_val);
+    
+    //define out_int
+    std::vector <llvm::Type*> out_int_params = { pointer_to_IO_class, llvm::Type::getInt32Ty(llvm_context) };
+    llvm::FunctionType *out_int_type = llvm::FunctionType::get(cool_to_llvm_type(IO), out_int_params, false);
+    llvm::Function *out_int_func = llvm::Function::Create(out_int_type, llvm::Function::ExternalLinkage, "IO_out_int"
+                                    , llvm_module);
+    llvm::BasicBlock *bb_out_int = llvm::BasicBlock::Create(llvm_context, "entry", out_int_func);
+    llvm_ir_builder.SetInsertPoint(bb_out_int);
+    std::vector <llvm::Value *> Args_out_int;
+    llvm::Value *fmt = llvm_ir_builder.CreateGlobalStringPtr("%d\n", "out_int_fmt");
+    Args_out_int.push_back(fmt);
+    Args_out_int.push_back(out_int_func->args().begin() + 1);
+    llvm_ir_builder.CreateCall(printf_ptr, Args_out_int, "call_out_int");    
+    llvm::Value* io_val_out_int = llvm_ir_builder.CreateLoad(out_int_func->args().begin());
+    return llvm_ir_builder.CreateRet(io_val_out_int);
 
 }
 
