@@ -263,9 +263,6 @@ llvm::Value* program_class::genIOCode()
     llvm::BasicBlock *BB = llvm::BasicBlock::Create(llvm_context, "entry", out_string_func);
     
     llvm_ir_builder.SetInsertPoint(BB);
-    llvm::Value *fmt =
-        llvm_ir_builder.CreateGlobalStringPtr("The sum is: %s\n");
-    
     llvm::Value *printf_ptr = llvm_module->getOrInsertFunction("printf", printftype);
 
     std::vector <llvm::Value *> Args;
