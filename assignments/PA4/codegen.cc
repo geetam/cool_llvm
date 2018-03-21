@@ -8,13 +8,14 @@
 #include <vector>
 #include "symtab.h"
 #include <llvm/Support/raw_os_ostream.h>
+#include "basicclasses.h"
 
 extern char* curr_filename;
 static llvm::LLVMContext llvm_context;
 static llvm::IRBuilder<> llvm_ir_builder(llvm_context);
 static llvm::Module* llvm_module;
-
 static llvm::Type* llvm_int_type = llvm::Type::getInt32Ty(llvm_context);
+BasicClasses basic_classes;
 std::map <Symbol, llvm::Type*> cool_to_llvm_typemap;
 
 
@@ -26,7 +27,11 @@ llvm::Type* cool_to_llvm_type(const Symbol coolty)
     {
         cool_to_llvm_typemap[coolty] = llvm_int_type;
     }
-    
+    else if(strcmp(coolty->get_string(), "IO") == 0)
+    {
+        cool_to_llvm_typemap[coolty] = basic_classes.get_IO_class()->get_llvm_type();
+    }
+
     return cool_to_llvm_typemap.find(coolty)->second;
 }
 
@@ -63,8 +68,9 @@ void program_class::init_codegen(const Environment &semant_env)
 
 llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
 {
-    
     llvm::raw_os_ostream cout_raw_os { std::cout };
+    
+    genIOCode();
     for(int i = classes->first(); classes->more(i); i = classes->next(i))
     {
        class__class* cls = static_cast<class__class*>(classes->nth(i));
@@ -72,7 +78,6 @@ llvm::Value* program_class::codegen(const Symbol_to_Addr &location_var)
        cls->codegen(location_var);
     }
     gen_main();
-    genIOCode();
     llvm_module->print(cout_raw_os, nullptr);
     
 }
@@ -170,6 +175,11 @@ llvm::Value* int_const_class::codegen(const Symbol_to_Addr &location_var)
     return llvm::ConstantInt::get(llvm_context, llvm::APInt(32, atoi(token->get_string()) , true));
 }
 
+llvm::Value* string_const_class::codegen(const Symbol_to_Addr &location_var)
+{
+    return llvm_ir_builder.CreateGlobalStringPtr(token->get_string());
+}
+
 llvm::Value* object_class::codegen(const Symbol_to_Addr &location_var)
 {
     Symbol_to_Addr tab = location_var;
@@ -180,25 +190,27 @@ llvm::Value* object_class::codegen(const Symbol_to_Addr &location_var)
 llvm::Value* dispatch_class::codegen(const Symbol_to_Addr &location_var)
 {
     Symbol_to_Addr tab = location_var;
-    std::string name_s = name->get_string();
-    llvm::Function *llvm_func = llvm_module->getFunction(name_s);
     object_class* obj = dynamic_cast <object_class*>(expr);
-    
+
     if(obj)
     {
         std::vector <llvm::Value*> params;
         llvm::Value* loc = tab.lookup(obj->getName());
         llvm::Value *val = llvm_ir_builder.CreateLoad(loc);
-        params.push_back(val);
+        params.push_back(loc);
         for(int i = actual->first(); actual->more(i); i = actual->next(i))
         {
-            params.push_back(actual->codegen(location_var));
+            params.push_back(actual->nth(i)->codegen(location_var));
         }
         std::string class_name = obj->getType()->get_string();
         std::string func_name = class_name + '_' + std::string(name->get_string());
-        return llvm_ir_builder.CreateCall(llvm_func, params, func_name);
+        llvm::Function *llvm_func = llvm_module->getFunction(func_name);
+        if(llvm_func)
+        {
+            return llvm_ir_builder.CreateCall(llvm_func, params);
+        }
     }
-    
+    return nullptr;
 }
 
 void class__class::set_attr_llvm()
@@ -241,26 +253,26 @@ std::pair <bool, Symbol> class__class::attr_at_index(int idx)
 
 llvm::Value* program_class::genIOCode()
 {
-    std::vector <llvm::Type*> char_ptr(1, llvm::Type::getInt8PtrTy(llvm_context));
-    llvm::FunctionType *out_string_type = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), char_ptr, false);
-    llvm::Function *out_string_func = llvm::Function::Create(out_string_type, llvm::Function::ExternalLinkage, "out_string", llvm_module);
-    
-    llvm::FunctionType *printftype = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), char_ptr, true);
+    Symbol IO = idtable.add_string("IO");
+    llvm::PointerType* pointer_to_IO_class = llvm::PointerType::get(cool_to_llvm_type(IO), 0);
+    std::vector <llvm::Type*> out_string_params = { pointer_to_IO_class, llvm::Type::getInt8PtrTy(llvm_context) };
+    llvm::FunctionType *out_string_type = llvm::FunctionType::get(cool_to_llvm_type(IO), out_string_params, false);
+    llvm::Function *out_string_func = llvm::Function::Create(out_string_type, llvm::Function::ExternalLinkage, "IO_out_string", llvm_module);
+    std::vector <llvm::Type*> printfargs(1, llvm::Type::getInt8PtrTy(llvm_context));
+    llvm::FunctionType *printftype = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), printfargs, true);
     llvm::BasicBlock *BB = llvm::BasicBlock::Create(llvm_context, "entry", out_string_func);
     
     llvm_ir_builder.SetInsertPoint(BB);
     llvm::Value *fmt =
         llvm_ir_builder.CreateGlobalStringPtr("The sum is: %s\n");
     
-
-    llvm::Value *out_string_ptr = llvm_module->getOrInsertFunction("out_string", out_string_type);
     llvm::Value *printf_ptr = llvm_module->getOrInsertFunction("printf", printftype);
 
     std::vector <llvm::Value *> Args;
-    Args.push_back(out_string_func->args().begin());
+    Args.push_back(out_string_func->args().begin() + 1);
     llvm::Value *ret = llvm_ir_builder.CreateCall(printf_ptr, Args, "calltmp");
-
-    return llvm_ir_builder.CreateRet(ret);
+    llvm::Value* io_val = llvm_ir_builder.CreateLoad(out_string_func->args().begin());
+    return llvm_ir_builder.CreateRet(io_val);
 
 }
 
