@@ -170,6 +170,33 @@ llvm::Value* plus_class::codegen(const Symbol_to_Addr &location_var)
     return sum;
 }
 
+llvm::Value* sub_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value* left_val = e1->codegen(location_var);
+    llvm::Value* right_val = e2->codegen(location_var);
+    
+    llvm::Value *diff = llvm_ir_builder.CreateSub(left_val, right_val, "sub_class");
+    return diff;
+}
+
+llvm::Value* mul_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value* left_val = e1->codegen(location_var);
+    llvm::Value* right_val = e2->codegen(location_var);
+    
+    llvm::Value *mul = llvm_ir_builder.CreateMul(left_val, right_val, "sub_class");
+    return mul;
+}
+
+llvm::Value* divide_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value* left_val = e1->codegen(location_var);
+    llvm::Value* right_val = e2->codegen(location_var);
+    
+    llvm::Value *div = llvm_ir_builder.CreateSDiv(left_val, right_val, "sub_class");
+    return div;
+}
+
 llvm::Value* int_const_class::codegen(const Symbol_to_Addr &location_var)
 {
     return llvm::ConstantInt::get(llvm_context, llvm::APInt(32, atoi(token->get_string()) , true));
