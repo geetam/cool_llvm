@@ -27,6 +27,10 @@ llvm::Type* cool_to_llvm_type(const Symbol coolty)
     {
         cool_to_llvm_typemap[coolty] = llvm_int_type;
     }
+    else if(strcmp(coolty->get_string(), "Bool") == 0)
+    {
+        cool_to_llvm_typemap[coolty] = llvm::Type::getInt8Ty(llvm_context);
+    }
     else if(strcmp(coolty->get_string(), "IO") == 0)
     {
         cool_to_llvm_typemap[coolty] = basic_classes.get_IO_class()->get_llvm_type();
