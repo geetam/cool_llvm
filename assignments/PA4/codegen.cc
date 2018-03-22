@@ -367,3 +367,13 @@ llvm::Function* program_class::gen_main()
     }
     return nullptr;
 }
+
+llvm::Value* block_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value* val;
+    for(int i = body->first(); body->more(i);  i = body->next(i))
+    {
+        val = body->nth(i)->codegen(location_var);
+    }
+    return val;
+}
