@@ -32,7 +32,8 @@ llvm::Type* cool_to_llvm_type(const Symbol coolty)
         cool_to_llvm_typemap[coolty] = basic_classes.get_IO_class()->get_llvm_type();
     }
 
-    return cool_to_llvm_typemap.find(coolty)->second;
+    return cool_to_llvm_typemap.find(coolty) != cool_to_llvm_typemap.end()?
+           cool_to_llvm_typemap.find(coolty)->second : nullptr;
 }
 
 llvm::StructType* class__class::get_llvm_type()
