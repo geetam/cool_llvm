@@ -184,7 +184,7 @@ llvm::Value* mul_class::codegen(const Symbol_to_Addr &location_var)
     llvm::Value* left_val = e1->codegen(location_var);
     llvm::Value* right_val = e2->codegen(location_var);
     
-    llvm::Value *mul = llvm_ir_builder.CreateMul(left_val, right_val, "sub_class");
+    llvm::Value *mul = llvm_ir_builder.CreateMul(left_val, right_val, "mul_class");
     return mul;
 }
 
@@ -193,7 +193,7 @@ llvm::Value* divide_class::codegen(const Symbol_to_Addr &location_var)
     llvm::Value* left_val = e1->codegen(location_var);
     llvm::Value* right_val = e2->codegen(location_var);
     
-    llvm::Value *div = llvm_ir_builder.CreateSDiv(left_val, right_val, "sub_class");
+    llvm::Value *div = llvm_ir_builder.CreateSDiv(left_val, right_val, "divide_class");
     return div;
 }
 
