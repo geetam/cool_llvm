@@ -405,7 +405,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
    Symbol check_type(const Environment & env) override;
-
+    llvm::Value * codegen(const Symbol_to_Addr & ) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -739,6 +739,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
     Symbol check_type(const Environment &env) override;
+    llvm::Value * codegen(const Symbol_to_Addr & ) override;
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif

@@ -417,3 +417,39 @@ llvm::Value* lt_class::codegen(const Symbol_to_Addr &location_var)
     llvm::Value* res_1_bit = llvm_ir_builder.CreateICmpSLT(left, right);
     return llvm_ir_builder.CreateZExt(res_1_bit,llvm::Type::getInt8Ty(llvm_context));
 }
+
+llvm::Value* bool_const_class::codegen(const Symbol_to_Addr &location_var)
+{
+    assert(val == 0 || val == 1);
+    return llvm::ConstantInt::get(llvm_context, llvm::APInt(8, val, false));
+}
+
+llvm::Value* cond_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value *pred_val = pred->codegen(location_var);
+    pred_val = llvm_ir_builder.CreateTrunc(pred_val, llvm::IntegerType::getIntNTy(llvm_context, 1));
+    llvm::Function *curr_func = llvm_ir_builder.GetInsertBlock()->getParent();
+    llvm::BasicBlock *then_block = llvm::BasicBlock::Create(llvm_context, "then", curr_func);
+    llvm::BasicBlock *else_block = llvm::BasicBlock::Create(llvm_context, "else");
+    llvm::BasicBlock *merge_block = llvm::BasicBlock::Create(llvm_context, "merge");
+    llvm_ir_builder.CreateCondBr(pred_val, then_block, else_block);
+
+    llvm_ir_builder.SetInsertPoint(then_block);
+    llvm::Value *then_code = then_exp->codegen(location_var);
+    llvm_ir_builder.CreateBr(merge_block);
+    then_block = llvm_ir_builder.GetInsertBlock();
+
+    curr_func->getBasicBlockList().push_back(else_block);
+    llvm_ir_builder.SetInsertPoint(else_block);
+    llvm::Value *else_code = else_exp->codegen(location_var);
+    llvm_ir_builder.CreateBr(merge_block);
+    else_block = llvm_ir_builder.GetInsertBlock();
+
+    curr_func->getBasicBlockList().push_back(merge_block);
+    llvm_ir_builder.SetInsertPoint(merge_block);
+    llvm::PHINode *phi_node = llvm_ir_builder.CreatePHI(cool_to_llvm_type(get_type()), 2, "if_else_phi");
+
+    phi_node->addIncoming(then_code, then_block);
+    phi_node->addIncoming(else_code, else_block);
+    return phi_node;
+}
