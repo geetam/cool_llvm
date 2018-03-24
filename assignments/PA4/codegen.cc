@@ -468,3 +468,11 @@ llvm::Value* comp_class::codegen(const Symbol_to_Addr &location_var)
     llvm::Value* expr_val = e1->codegen(location_var);
     return llvm_ir_builder.CreateXor(expr_val, llvm::ConstantInt::get(llvm_context, llvm::APInt(8, 1, false)));
 }
+
+llvm::Value* neg_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value *expr_val = e1->codegen(location_var);
+    llvm::Constant *zero_32_bit = llvm::ConstantInt::get(llvm_context, llvm::APInt(32, 0, false));
+    llvm::Value *negative_of_e = llvm_ir_builder.CreateSub(zero_32_bit, expr_val, "", false, true);
+    return negative_of_e;
+}
