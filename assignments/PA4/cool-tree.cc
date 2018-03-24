@@ -756,12 +756,12 @@ void neg_class::dump(ostream& stream, int n)
 
 Symbol neg_class::check_type(const Environment &env)
 {
-    if(strcmp(e1->check_type(env)->get_string(), "Bool") != 0)
+    if(strcmp(e1->check_type(env)->get_string(), "Int") != 0)
     {
-        serror.print_error(get_line_number(), "negation used with a non bool");
+        serror.print_error(get_line_number(), "negation used with a non Int");
         type = idtable.add_string("Object");
     } else {
-        type = idtable.add_string("Bool");
+        type = idtable.add_string("Int");
     }
     
     return type;
