@@ -453,3 +453,12 @@ llvm::Value* cond_class::codegen(const Symbol_to_Addr &location_var)
     phi_node->addIncoming(else_code, else_block);
     return phi_node;
 }
+
+llvm::Value* assign_class::codegen(const Symbol_to_Addr &location_var)
+{
+    auto tab = location_var;
+    llvm::Value *addr = tab.lookup(name);
+    auto expr_val = expr->codegen(location_var);
+    llvm_ir_builder.CreateStore(expr_val, addr);
+    return expr_val;
+}
