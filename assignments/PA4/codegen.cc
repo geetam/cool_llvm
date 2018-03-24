@@ -462,3 +462,9 @@ llvm::Value* assign_class::codegen(const Symbol_to_Addr &location_var)
     llvm_ir_builder.CreateStore(expr_val, addr);
     return expr_val;
 }
+
+llvm::Value* comp_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value* expr_val = e1->codegen(location_var);
+    return llvm_ir_builder.CreateXor(expr_val, llvm::ConstantInt::get(llvm_context, llvm::APInt(8, 1, false)));
+}
