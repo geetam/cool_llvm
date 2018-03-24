@@ -476,3 +476,29 @@ llvm::Value* neg_class::codegen(const Symbol_to_Addr &location_var)
     llvm::Value *negative_of_e = llvm_ir_builder.CreateSub(zero_32_bit, expr_val, "", false, true);
     return negative_of_e;
 }
+
+llvm::Value* loop_class::codegen(const Symbol_to_Addr &location_var)
+{
+
+    llvm::Function *curr_func = llvm_ir_builder.GetInsertBlock()->getParent();
+    llvm::BasicBlock *pred_block = llvm::BasicBlock::Create(llvm_context, "predicate", curr_func);
+    llvm_ir_builder.CreateBr(pred_block);
+    llvm_ir_builder.SetInsertPoint(pred_block);
+    llvm::Value *pred_val = pred->codegen(location_var);
+    pred_val = llvm_ir_builder.CreateTrunc(pred_val, llvm::IntegerType::getIntNTy (llvm_context, 1));
+     
+    llvm::BasicBlock *body_block = llvm::BasicBlock::Create(llvm_context, "loop_body");
+    llvm::BasicBlock *exit_block = llvm::BasicBlock::Create(llvm_context, "exit_loop");
+    llvm_ir_builder.CreateCondBr(pred_val, body_block, exit_block);
+    pred_block = llvm_ir_builder.GetInsertBlock();
+    curr_func->getBasicBlockList().push_back(body_block);
+    llvm_ir_builder.SetInsertPoint(body_block);
+    llvm::Value *body_val = body->codegen(location_var);
+    llvm_ir_builder.CreateBr(pred_block);
+     
+    curr_func->getBasicBlockList().push_back(exit_block);
+    llvm_ir_builder.SetInsertPoint(exit_block);
+    llvm::PHINode *phi_node = llvm_ir_builder.CreatePHI(pred_val->getType(), 1);
+    phi_node->addIncoming(pred_val, pred_block);
+    return body_val;
+}
