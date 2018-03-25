@@ -481,14 +481,14 @@ llvm::Value* loop_class::codegen(const Symbol_to_Addr &location_var)
 {
 
     llvm::Function *curr_func = llvm_ir_builder.GetInsertBlock()->getParent();
-    llvm::BasicBlock *pred_block = llvm::BasicBlock::Create(llvm_context, "predicate", curr_func);
+    llvm::BasicBlock *pred_block = llvm::BasicBlock::Create(llvm_context, "loop_predicate", curr_func);
     llvm_ir_builder.CreateBr(pred_block);
     llvm_ir_builder.SetInsertPoint(pred_block);
     llvm::Value *pred_val = pred->codegen(location_var);
     pred_val = llvm_ir_builder.CreateTrunc(pred_val, llvm::IntegerType::getIntNTy (llvm_context, 1));
      
     llvm::BasicBlock *body_block = llvm::BasicBlock::Create(llvm_context, "loop_body");
-    llvm::BasicBlock *exit_block = llvm::BasicBlock::Create(llvm_context, "exit_loop");
+    llvm::BasicBlock *exit_block = llvm::BasicBlock::Create(llvm_context, "loop_exit");
     llvm_ir_builder.CreateCondBr(pred_val, body_block, exit_block);
     pred_block = llvm_ir_builder.GetInsertBlock();
     curr_func->getBasicBlockList().push_back(body_block);
