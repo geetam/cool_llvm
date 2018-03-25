@@ -140,6 +140,7 @@
     %type <formal> formal
     %type <formals> formal_list
     %type <expressions> expr_list
+    %type <expressions> expr_semi_colon_sep
     %type <expression> expr
     %type <feature> feature
     %type <feature> attribute
@@ -244,7 +245,13 @@
                     $$ = append_Expressions(single_Expressions($1), $3);
                 }
                 ;
-                
+    expr_semi_colon_sep : expr ';' {
+                    $$ = single_Expressions($1);
+                }
+                |
+                expr ';' expr_semi_colon_sep {
+                    $$ = append_Expressions(single_Expressions($1), $3);
+                }
     formal : OBJECTID ':' TYPEID { $$ = formal($1, $3); }
             ;
             
@@ -262,12 +269,14 @@
                 ;
 
     expr:   OBJECTID ASSIGN expr { $$ = assign($1, $3);}
-        |   expr '[' '@' TYPEID ']' '.' OBJECTID '(' ')' {
-                $$ = static_dispatch($1, $4, $7, nil_Expressions());
+        |   expr '@' TYPEID  '.' OBJECTID '(' ')' {
+                $$ = static_dispatch($1, $3, $5, nil_Expressions());
             }
-        |   expr '[' '@' TYPEID ']' '.' OBJECTID '(' expr_list ')' {
-                $$ = static_dispatch($1, $4, $7, $9);
+        |   expr '@' TYPEID '.' OBJECTID '(' expr_list ')' {
+                $$ = static_dispatch($1, $3, $5, $7);
             }
+        |   expr '.' OBJECTID '(' ')' { $$ = dispatch($1, $3, nil_Expressions()); }
+        |   expr '.' OBJECTID '(' expr_list ')' { $$ = dispatch($1, $3, $5); } 
         |   OBJECTID '(' ')' { $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions() ); }
         |   OBJECTID '(' expr_list ')' { $$ = dispatch(object(idtable.add_string("self")), $1, $3); }
         
@@ -277,7 +286,7 @@
         |   WHILE expr LOOP expr POOL   {
                 $$ = loop($2, $4);
             }
-        |   '{' expr_list '}' { $$ = block($2);}
+        |   '{' expr_semi_colon_sep '}' { $$ = block($2);}
         |   LET OBJECTID ':' TYPEID let_feature_list IN expr {$$ = let($2, $4, no_expr(), $7);}
         |   LET OBJECTID ':' TYPEID ASSIGN expr let_feature_list IN expr {$$ = let($2, $4, $6, $9);}
         |   NEW TYPEID  {$$ = new_($2); }
