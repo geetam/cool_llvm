@@ -212,7 +212,7 @@ WHITE_SPACE     (\n | \r | \t | \v | \f)+*/
 (?<={CLASS}{WHITESPACE}){IDENTIFIER}(?={INHERITS}{IDENTIFIER})*/
 
 
-{IDENTIFIER}/{WHITESPACE}:  {
+{IDENTIFIER}/{OPTWHITE}:  {
     cool_yylval.symbol = stringtable.add_string(yytext);
     BEGIN(IDEN_DEC_ENC);
     return OBJECTID;
