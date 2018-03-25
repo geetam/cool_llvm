@@ -418,6 +418,14 @@ llvm::Value* lt_class::codegen(const Symbol_to_Addr &location_var)
     return llvm_ir_builder.CreateZExt(res_1_bit,llvm::Type::getInt8Ty(llvm_context));
 }
 
+llvm::Value* leq_class::codegen(const Symbol_to_Addr &location_var)
+{
+    llvm::Value* left = e1->codegen(location_var);
+    llvm::Value* right = e2->codegen(location_var);
+    llvm::Value* res_1_bit = llvm_ir_builder.CreateICmpSLE(left, right);
+    return llvm_ir_builder.CreateZExt(res_1_bit, llvm::Type::getInt8Ty(llvm_context));
+}
+
 llvm::Value* bool_const_class::codegen(const Symbol_to_Addr &location_var)
 {
     assert(val == 0 || val == 1);
