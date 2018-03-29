@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.0)
+find_package(LLVM REQUIRED CONFIG)
+set(cool_support "${CMAKE_CURRENT_SOURCE_DIR}/../cool_support_code/semant_codegen")
+include_directories(${cool_support})
+set(SRC semant.cc semant-phase.cc inheritancegraph.cc codegen.cc environment.cc cool-tree.cc semanterror.cc ${cool_support}/handle_flags.cc ${cool_support}/ast-lex.cc ${cool_support}/ast-parse.cc ${cool_support}/stringtab.cc ${cool_support}/utilities.cc ${cool_support}/dumptype.cc ${cool_support}/tree.cc) 
+add_executable(codegen_semant ${SRC})
+target_link_libraries(codegen_semant LLVM-5.0) 
