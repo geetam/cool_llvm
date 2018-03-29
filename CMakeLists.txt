@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.0)
+project(cool_llvm)
+add_subdirectory(lexer)
+add_subdirectory(parser)
+add_subdirectory(codegen_and_semant)

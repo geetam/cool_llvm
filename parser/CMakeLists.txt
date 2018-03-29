@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
 find_package(BISON)
 set(cool_support "${CMAKE_CURRENT_SOURCE_DIR}/../cool_support_code/lexing_parsing")
 include_directories(${cool_support})

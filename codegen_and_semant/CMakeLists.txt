@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.0)
 find_package(LLVM REQUIRED CONFIG)
 set(cool_support "${CMAKE_CURRENT_SOURCE_DIR}/../cool_support_code/semant_codegen")
 include_directories(${cool_support})
